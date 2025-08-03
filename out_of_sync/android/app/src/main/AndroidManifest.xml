@@ -1,4 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Allow network access so the game can download remote images and communicate
+         with services. This permission is required for Android but is not added
+         by default in Flutter templates. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:label="out_of_symc"
         android:name="${applicationName}"
