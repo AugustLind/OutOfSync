@@ -9,6 +9,11 @@ class Game extends ChangeNotifier {
   int? oddPlayerIndex;
   bool started = false;
 
+  final Set<String> readyPlayers = {};
+  bool votingStarted = false;
+  final Map<String, String> votes = {};
+  String? voteResult;
+
   Game({required this.code, required this.hostName}) : players = [hostName];
 
   void addPlayer(String name) {
@@ -19,6 +24,32 @@ class Game extends ChangeNotifier {
   void startGame() {
     oddPlayerIndex = Random().nextInt(players.length);
     started = true;
+    readyPlayers.clear();
+    votes.clear();
+    votingStarted = false;
+    voteResult = null;
+    notifyListeners();
+  }
+
+  void readyToVote(String player) {
+    readyPlayers.add(player);
+    if (readyPlayers.length == players.length) {
+      votingStarted = true;
+    }
+    notifyListeners();
+  }
+
+  void vote(String voter, String votee) {
+    votes[voter] = votee;
+    if (votes.length == players.length) {
+      final counts = <String, int>{};
+      for (final choice in votes.values) {
+        counts[choice] = (counts[choice] ?? 0) + 1;
+      }
+      voteResult = counts.entries
+          .reduce((a, b) => a.value >= b.value ? a : b)
+          .key;
+    }
     notifyListeners();
   }
 }
@@ -35,6 +66,8 @@ class GamePage extends StatefulWidget {
 
 class _GamePageState extends State<GamePage> {
   bool _showVoteButton = false;
+  bool _readyPressed = false;
+  bool _hasVoted = false;
   late final bool _isOdd;
   static const _sameImage = 'https://i.pravatar.cc/300?img=1';
   static const _oddImage = 'https://i.pravatar.cc/300?img=2';
@@ -53,21 +86,66 @@ class _GamePageState extends State<GamePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.network(_isOdd ? _oddImage : _sameImage),
-            const SizedBox(height: 32),
-            if (_showVoteButton)
-              ElevatedButton(
-                onPressed: () {},
-                child: const Text('Ready to Vote'),
-              ),
-          ],
-        ),
-      ),
+    return AnimatedBuilder(
+      animation: widget.game,
+      builder: (context, _) {
+        Widget content;
+        if (widget.game.voteResult != null) {
+          content = Text('Most voted: ${widget.game.voteResult}');
+        } else if (widget.game.votingStarted) {
+          if (_hasVoted) {
+            content = const Text('Waiting for others to vote...');
+          } else {
+            content = Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Vote for a player'),
+                const SizedBox(height: 16),
+                for (final player in widget.game.players)
+                  ElevatedButton(
+                    onPressed: () {
+                      widget.game.vote(widget.playerName, player);
+                      setState(() {
+                        _hasVoted = true;
+                      });
+                    },
+                    child: Text(player),
+                  ),
+              ],
+            );
+          }
+        } else {
+          if (_readyPressed) {
+            content = const Text('Waiting for others to be ready...');
+          } else if (_showVoteButton) {
+            content = ElevatedButton(
+              onPressed: () {
+                widget.game.readyToVote(widget.playerName);
+                setState(() {
+                  _readyPressed = true;
+                  _showVoteButton = false;
+                });
+              },
+              child: const Text('Ready to Vote'),
+            );
+          } else {
+            content = const SizedBox.shrink();
+          }
+        }
+
+        return Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.network(_isOdd ? _oddImage : _sameImage),
+                const SizedBox(height: 32),
+                content,
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
