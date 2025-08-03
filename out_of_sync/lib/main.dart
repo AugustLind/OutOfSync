@@ -1,6 +1,21 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
+class Game extends ChangeNotifier {
+  final String code;
+  final String hostName;
+  final List<String> players;
+
+  Game({required this.code, required this.hostName}) : players = [hostName];
+
+  void addPlayer(String name) {
+    players.add(name);
+    notifyListeners();
+  }
+}
+
+Game? currentGame;
+
 void main() {
   runApp(const MainApp());
 }
@@ -39,6 +54,7 @@ class _HomePageState extends State<HomePage> {
       return;
     }
     final code = _generateCode();
+    currentGame = Game(code: code, hostName: name);
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -46,7 +62,17 @@ class _HomePageState extends State<HomePage> {
         content: Text('Del denne koden med andre: $code'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => LobbyPage(
+                    game: currentGame!,
+                    playerName: name,
+                  ),
+                ),
+              );
+            },
             child: const Text('OK'),
           )
         ],
@@ -84,8 +110,21 @@ class _HomePageState extends State<HomePage> {
                   _showMessage('Kode kan ikke være tom');
                   return;
                 }
+                if (currentGame == null || currentGame!.code != code) {
+                  Navigator.of(context).pop();
+                  _showMessage('Fant ikke spill med kode: $code');
+                  return;
+                }
+                currentGame!.addPlayer(name);
                 Navigator.of(context).pop();
-                _showMessage('Bli med i spillet med kode: $code');
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => LobbyPage(
+                      game: currentGame!,
+                      playerName: name,
+                    ),
+                  ),
+                );
               },
               child: const Text('Bli med'),
             ),
@@ -139,6 +178,49 @@ class _HomePageState extends State<HomePage> {
               )
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class LobbyPage extends StatelessWidget {
+  final Game game;
+  final String playerName;
+
+  const LobbyPage({super.key, required this.game, required this.playerName});
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isHost = playerName == game.hostName;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Lobby – ${game.code}'),
+      ),
+      body: Center(
+        child: AnimatedBuilder(
+          animation: game,
+          builder: (context, _) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Spillere (${game.players.length})'),
+                const SizedBox(height: 16),
+                for (final player in game.players) Text(player),
+                const SizedBox(height: 32),
+                if (isHost)
+                  ElevatedButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Spill startet')),
+                      );
+                    },
+                    child: const Text('Start spill'),
+                  ),
+              ],
+            );
+          },
         ),
       ),
     );
