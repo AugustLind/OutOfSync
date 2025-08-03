@@ -1,2 +1,0 @@
-# OutOfSync
-App
