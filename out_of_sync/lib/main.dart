@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 
@@ -5,12 +6,69 @@ class Game extends ChangeNotifier {
   final String code;
   final String hostName;
   final List<String> players;
+  int? oddPlayerIndex;
+  bool started = false;
 
   Game({required this.code, required this.hostName}) : players = [hostName];
 
   void addPlayer(String name) {
     players.add(name);
     notifyListeners();
+  }
+
+  void startGame() {
+    oddPlayerIndex = Random().nextInt(players.length);
+    started = true;
+    notifyListeners();
+  }
+}
+
+class GamePage extends StatefulWidget {
+  final Game game;
+  final String playerName;
+
+  const GamePage({super.key, required this.game, required this.playerName});
+
+  @override
+  State<GamePage> createState() => _GamePageState();
+}
+
+class _GamePageState extends State<GamePage> {
+  bool _showVoteButton = false;
+  late final bool _isOdd;
+  static const _sameImage = 'https://i.pravatar.cc/300?img=1';
+  static const _oddImage = 'https://i.pravatar.cc/300?img=2';
+
+  @override
+  void initState() {
+    super.initState();
+    _isOdd = widget.game.players.indexOf(widget.playerName) ==
+        widget.game.oddPlayerIndex;
+    Timer(const Duration(seconds: 10), () {
+      setState(() {
+        _showVoteButton = true;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.network(_isOdd ? _oddImage : _sameImage),
+            const SizedBox(height: 32),
+            if (_showVoteButton)
+              ElevatedButton(
+                onPressed: () {},
+                child: const Text('Ready to Vote'),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -184,37 +242,56 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class LobbyPage extends StatelessWidget {
+class LobbyPage extends StatefulWidget {
   final Game game;
   final String playerName;
 
   const LobbyPage({super.key, required this.game, required this.playerName});
 
   @override
+  State<LobbyPage> createState() => _LobbyPageState();
+}
+
+class _LobbyPageState extends State<LobbyPage> {
+  bool _navigated = false;
+
+  @override
   Widget build(BuildContext context) {
-    final bool isHost = playerName == game.hostName;
+    final bool isHost = widget.playerName == widget.game.hostName;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Lobby – ${game.code}'),
+        title: Text('Lobby – ${widget.game.code}'),
       ),
       body: Center(
         child: AnimatedBuilder(
-          animation: game,
+          animation: widget.game,
           builder: (context, _) {
+            if (widget.game.started && !_navigated) {
+              _navigated = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (_) => GamePage(
+                      game: widget.game,
+                      playerName: widget.playerName,
+                    ),
+                  ),
+                );
+              });
+            }
+
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Spillere (${game.players.length})'),
+                Text('Spillere (${widget.game.players.length})'),
                 const SizedBox(height: 16),
-                for (final player in game.players) Text(player),
+                for (final player in widget.game.players) Text(player),
                 const SizedBox(height: 32),
                 if (isHost)
                   ElevatedButton(
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Spill startet')),
-                      );
+                      widget.game.startGame();
                     },
                     child: const Text('Start spill'),
                   ),
