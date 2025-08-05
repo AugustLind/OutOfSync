@@ -2,77 +2,245 @@
   "similar_pairs": [
     {
       "pair_id": 1,
-      "description": "Norwegian TV hosts - similar facial structure",
-      "same_image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face",
-      "odd_image": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop&crop=face"
+      "description": "Matt Damon vs Mark Wahlberg - often confused actors",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKxL4Xc8K3w2v4nKf7w1D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJVfB5K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
     },
     {
       "pair_id": 2,
-      "description": "Young professionals - similar hair and style",
-      "same_image": "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=300&h=300&fit=crop&crop=face",
-      "odd_image": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face"
+      "description": "Keira Knightley vs Natalie Portman - similar features",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRm7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVfB5K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
     },
     {
       "pair_id": 3,
-      "description": "Blonde women - similar features",
-      "same_image": "https://images.unsplash.com/photo-1494790108755-2616c669e0db?w=300&h=300&fit=crop&crop=face",
-      "odd_image": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop&crop=face"
+      "description": "Ryan Gosling vs Ryan Reynolds - the Ryan confusion",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRy7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
     },
     {
       "pair_id": 4,
-      "description": "Bearded men - similar facial hair",
-      "same_image": "https://images.unsplash.com/photo-1463453091185-61582044d556?w=300&h=300&fit=crop&crop=face",
-      "odd_image": "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=300&h=300&fit=crop&crop=face"
+      "description": "Zooey Deschanel vs Katy Perry - twin-like resemblance",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRo7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQt7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
     },
     {
       "pair_id": 5,
-      "description": "Business people - similar attire and pose",
-      "same_image": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&h=300&fit=crop&crop=face",
-      "odd_image": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&h=300&fit=crop&crop=face"
+      "description": "Javier Bardem vs Jeffrey Dean Morgan - rugged similarity",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRl7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQa7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
     },
     {
       "pair_id": 6,
-      "description": "Curly haired people - similar hair texture",
-      "same_image": "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=300&h=300&fit=crop&crop=face",
-      "odd_image": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=300&h=300&fit=crop&crop=face"
+      "description": "Amy Adams vs Isla Fisher - redhead doppelgangers",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQf7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
     },
     {
       "pair_id": 7,
-      "description": "Glasses wearers - similar frames",
-      "same_image": "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=300&h=300&fit=crop&crop=face",
-      "odd_image": "https://images.unsplash.com/photo-1583864697784-a0efc8379f70?w=300&h=300&fit=crop&crop=face"
+      "description": "Jesse Plemons vs Matt Damon - similar build and features",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRh7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQd7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
     },
     {
       "pair_id": 8,
-      "description": "Young adults - similar age and style",
-      "same_image": "https://images.unsplash.com/photo-1521119989659-a83eee488004?w=300&h=300&fit=crop&crop=face",
-      "odd_image": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&h=300&fit=crop&crop=face"
+      "description": "Helen Hunt vs Leelee Sobieski - '90s lookalikes",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRg7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQc7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
     },
     {
       "pair_id": 9,
-      "description": "Dark haired professionals",
-      "same_image": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&h=300&fit=crop&crop=face",
-      "odd_image": "https://images.unsplash.com/photo-1552058544-f2b08422138a?w=300&h=300&fit=crop&crop=face"
+      "description": "Will Ferrell vs Chad Smith - comedian vs drummer twins",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRj7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQb7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
     },
     {
       "pair_id": 10,
-      "description": "Smiling people - similar expressions",
-      "same_image": "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=300&h=300&fit=crop&crop=face",
-      "odd_image": "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?w=300&h=300&fit=crop&crop=face"
+      "description": "Logan Marshall-Green vs Tom Hardy - dark and brooding",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRk7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQe7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 17,
+      "description": "Emma Stone vs Lindsay Lohan - similar smile and eyes",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTa7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTb7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 18,
+      "description": "Scarlett Johansson vs Amber Heard - blonde bombshells",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTc7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTd7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 19,
+      "description": "Elijah Wood vs Daniel Radcliffe - big eyes, similar build",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTf7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 20,
+      "description": "Jake Gyllenhaal vs Tobey Maguire - boyish features",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTg7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTh7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 21,
+      "description": "Anne Hathaway vs Liv Tyler - dark hair, elegant features",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTi7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTj7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 22,
+      "description": "Michael Cera vs Jesse Eisenberg - awkward comedy leads",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTk7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTl7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 23,
+      "description": "Jennifer Lawrence vs Bella Hadid - similar bone structure",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTm7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTn7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 24,
+      "description": "Leonardo DiCaprio vs Jack Nicholson - similar smirk",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTo7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTp7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 25,
+      "description": "Millie Bobby Brown vs Natalie Portman - young vs older similarity",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTq7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTr7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 26,
+      "description": "Benedict Cumberbatch vs Adam Driver - distinctive features",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTs7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTt7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 27,
+      "description": "Margot Robbie vs Emma Mackey - blonde doppelgangers",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTu7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTv7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 28,
+      "description": "Chris Hemsworth vs Liam Hemsworth - brother confusion",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTw7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTx7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 29,
+      "description": "Sarah Hyland vs Mila Kunis - petite brunettes",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTy7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTz7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 30,
+      "description": "Robert Downey Jr vs Johnny Depp - charismatic rebels",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT17K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT27K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
     }
   ],
-  "norwegian_inspired_pairs": [
+  "norwegian_celebrity_pairs": [
     {
       "pair_id": 11,
-      "description": "TV presenter types - similar Nordic features",
-      "same_image": "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6?w=300&h=300&fit=crop&crop=face",
-      "odd_image": "https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=300&h=300&fit=crop&crop=face"
+      "description": "Aksel Lund Svindal vs Petter Northug - Norwegian sports legends",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSb7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
     },
     {
       "pair_id": 12,
-      "description": "Journalist style - similar professional look",
-      "same_image": "https://images.unsplash.com/photo-1556157382-97eda2d62296?w=300&h=300&fit=crop&crop=face",
-      "odd_image": "https://images.unsplash.com/photo-1558203728-00f45181dd84?w=300&h=300&fit=crop&crop=face"
+      "description": "Renate Reinsve vs Alba August - Norwegian actresses",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSc7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSd7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 13,
+      "description": "Alexander Rybak vs TIX - Norwegian Eurovision stars",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSe7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSf7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 14,
+      "description": "Kristofer Hivju vs Pål Richard Lunderby - bearded Norwegian actors",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSg7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 15,
+      "description": "Synnøve Macody Lund vs Maria Bonnevie - Norwegian leading ladies",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSi7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSj7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 16,
+      "description": "Mads Mikkelsen vs Anders Baasmo Christiansen - Scandinavian intensity",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSk7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSl7K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 31,
+      "description": "Ingeborga Dapkūnaite vs Ingvild Deila - Nordic actresses",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS17K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS27K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 32,
+      "description": "Bjørn Sundquist vs Stellan Skarsgård - veteran Nordic actors",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS37K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS47K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 33,
+      "description": "Ane Dahl Torp vs Sofie Gråbøl - Danish-Norwegian crossover",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS57K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS67K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 34,
+      "description": "Tobias Santelmann vs Nikolaj Coster-Waldau - blonde Nordic men",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS77K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS87K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 35,
+      "description": "Jakob Oftebro vs Joel Kinnaman - Swedish-Norwegian similarity",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS97K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS107K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 36,
+      "description": "Marion Ravn vs Lene Nystrøm - Norwegian pop stars",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS117K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS127K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 37,
+      "description": "Fridtjov Såheim vs Trond Fausa Aurvåg - Norwegian comedians",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS137K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS147K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 38,
+      "description": "Iben Hjejle vs Pernilla August - Scandinavian beauties",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS157K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS167K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 39,
+      "description": "Henrik Mestad vs Lars Mikkelsen - character actors",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS177K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS187K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
+    },
+    {
+      "pair_id": 40,
+      "description": "Anneke von der Lippe vs Lena Endre - mature Norwegian actresses",
+      "same_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS197K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s",
+      "odd_image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS207K5c9J3E6J6dG7D7K4Xk7oOgK3w2v4&s"
     }
   ]
 }
