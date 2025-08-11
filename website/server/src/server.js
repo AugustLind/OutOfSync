@@ -67,6 +67,18 @@ io.on('connection', (socket) => {
       return;
     }
     
+    // Check if player is reconnecting to an existing game
+    const existingPlayer = game.players.find(p => p.name === playerName);
+    
+    if (existingPlayer) {
+      // Player is reconnecting - allow them back in
+      playerSockets.set(socket.id, { gameCode, playerName, isHost: existingPlayer.isHost });
+      socket.join(gameCode);
+      socket.emit('game-joined', { game: game.toJSON() });
+      console.log(`${playerName} reconnected to game ${gameCode}`);
+      return;
+    }
+    
     if (game.started) {
       socket.emit('error', { message: 'Game already started' });
       return;
@@ -128,6 +140,12 @@ io.on('connection', (socket) => {
     if (!game || !game.votingStarted) return;
 
     const result = game.vote(playerInfo.playerName, votee);
+    
+    if (!result.success) {
+      socket.emit('error', { message: 'Invalid vote' });
+      return;
+    }
+    
     io.to(playerInfo.gameCode).emit('vote-cast', { 
       voter: playerInfo.playerName, 
       votee,
@@ -162,9 +180,16 @@ io.on('connection', (socket) => {
               game: game.toJSON()
             });
             
+            // Only delete game if it's been empty for a longer period (30 minutes)
+            // to prevent accidental deletion during temporary disconnections
             if (game.players.length === 0) {
-              games.delete(playerInfo.gameCode);
-              console.log(`Game ${playerInfo.gameCode} deleted - no players left`);
+              setTimeout(() => {
+                const gameStillExists = games.get(playerInfo.gameCode);
+                if (gameStillExists && gameStillExists.players.length === 0) {
+                  games.delete(playerInfo.gameCode);
+                  console.log(`Game ${playerInfo.gameCode} deleted - no players left for extended period`);
+                }
+              }, 30 * 60 * 1000); // Wait 30 minutes before deleting empty game
             }
           }
         }, 5000); // Wait 5 seconds before removing player

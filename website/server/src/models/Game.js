@@ -68,6 +68,11 @@ class Game {
   vote(voter, votee) {
     if (!this.votingStarted || this.gameEnded) return { success: false };
     
+    // Don't allow voting for players not in the game
+    if (!this.players.some(p => p.name === votee)) {
+      return { success: false };
+    }
+    
     this.votes.set(voter, votee);
     
     if (this.votes.size === this.players.length) {

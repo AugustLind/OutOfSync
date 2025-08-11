@@ -159,7 +159,8 @@ export const GameProvider = ({ children }) => {
 
   const joinGame = (gameCode, playerName) => {
     dispatch({ type: 'SET_PLAYER_NAME', payload: playerName })
-    socket?.emit('join-game', { gameCode, playerName })
+    dispatch({ type: 'CLEAR_ERROR' })
+    socket?.emit('join-game', { gameCode: gameCode.toUpperCase(), playerName })
   }
 
   const startGame = () => {
