@@ -23,7 +23,11 @@ const io = socketIo(server, {
     origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true
-  }
+  },
+  pingTimeout: 60000,
+  pingInterval: 25000,
+  upgradeTimeout: 30000,
+  allowUpgrades: true
 });
 
 const PORT = process.env.PORT || 3001;
@@ -48,6 +52,10 @@ const playerSockets = new Map();
 
 io.on('connection', (socket) => {
   console.log('Player connected:', socket.id);
+  
+  socket.on('error', (error) => {
+    console.error('Socket error for', socket.id, ':', error);
+  });
 
   socket.on('create-game', ({ playerName }) => {
     const gameCode = generateGameCode();
@@ -61,48 +69,55 @@ io.on('connection', (socket) => {
   });
 
   socket.on('join-game', ({ gameCode, playerName }) => {
-    const game = games.get(gameCode);
-    if (!game) {
-      socket.emit('error', { message: 'Game not found' });
-      return;
-    }
-    
-    // Reset activity timeout on any game activity
-    if (game.lastActivityTimeout) {
-      clearTimeout(game.lastActivityTimeout);
-      game.lastActivityTimeout = null;
-    }
-    
-    // Check if player is reconnecting to an existing game
-    const existingPlayer = game.players.find(p => p.name === playerName);
-    
-    if (existingPlayer) {
-      // Player is reconnecting - allow them back in
-      playerSockets.set(socket.id, { gameCode, playerName, isHost: existingPlayer.isHost });
+    try {
+      const game = games.get(gameCode);
+      if (!game) {
+        socket.emit('error', { message: 'Game not found' });
+        return;
+      }
+      
+      // Reset activity timeout on any game activity
+      if (game.lastActivityTimeout) {
+        clearTimeout(game.lastActivityTimeout);
+        game.lastActivityTimeout = null;
+      }
+      
+      // Check if player is reconnecting to an existing game
+      const existingPlayer = game.players.find(p => p.name === playerName);
+      
+      if (existingPlayer) {
+        // Player is reconnecting - allow them back in
+        playerSockets.set(socket.id, { gameCode, playerName, isHost: existingPlayer.isHost });
+        socket.join(gameCode);
+        socket.emit('game-joined', { game: game.toJSON() });
+        console.log(`${playerName} reconnected to game ${gameCode}`);
+        return;
+      }
+      
+      if (game.started) {
+        socket.emit('error', { message: 'Game already started' });
+        return;
+      }
+
+      if (game.players.some(p => p.name === playerName)) {
+        socket.emit('error', { message: 'Player name already taken' });
+        return;
+      }
+
+      game.addPlayer(playerName);
+      playerSockets.set(socket.id, { gameCode, playerName, isHost: false });
+      
       socket.join(gameCode);
       socket.emit('game-joined', { game: game.toJSON() });
-      console.log(`${playerName} reconnected to game ${gameCode}`);
-      return;
+      
+      // Notify other players (not the joining player) about the new player
+      socket.to(gameCode).emit('player-joined', { playerName, game: game.toJSON() });
+      
+      console.log(`${playerName} joined game ${gameCode}`);
+    } catch (error) {
+      console.error('Error in join-game:', error);
+      socket.emit('error', { message: 'Failed to join game' });
     }
-    
-    if (game.started) {
-      socket.emit('error', { message: 'Game already started' });
-      return;
-    }
-
-    if (game.players.some(p => p.name === playerName)) {
-      socket.emit('error', { message: 'Player name already taken' });
-      return;
-    }
-
-    game.addPlayer(playerName);
-    playerSockets.set(socket.id, { gameCode, playerName, isHost: false });
-    
-    socket.join(gameCode);
-    socket.emit('game-joined', { game: game.toJSON() });
-    io.to(gameCode).emit('player-joined', { playerName, game: game.toJSON() });
-    
-    console.log(`${playerName} joined game ${gameCode}`);
   });
 
   socket.on('start-game', async () => {

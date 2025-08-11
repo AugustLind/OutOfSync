@@ -23,7 +23,10 @@ export const SocketProvider = ({ children }) => {
     const newSocket = io(serverUrl, {
       transports: ['websocket', 'polling'],
       timeout: 20000,
-      forceNew: true
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5,
+      maxReconnectionAttempts: 5
     })
     
     newSocket.on('connect', () => {
