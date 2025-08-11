@@ -149,16 +149,25 @@ io.on('connection', (socket) => {
     if (playerInfo) {
       const game = games.get(playerInfo.gameCode);
       if (game) {
-        game.removePlayer(playerInfo.playerName);
-        socket.to(playerInfo.gameCode).emit('player-left', { 
-          playerName: playerInfo.playerName,
-          game: game.toJSON()
-        });
-        
-        if (game.players.length === 0) {
-          games.delete(playerInfo.gameCode);
-          console.log(`Game ${playerInfo.gameCode} deleted - no players left`);
-        }
+        // Don't immediately remove player, give them time to reconnect
+        setTimeout(() => {
+          // Check if player reconnected
+          const stillDisconnected = !Array.from(playerSockets.values())
+            .some(p => p.playerName === playerInfo.playerName && p.gameCode === playerInfo.gameCode);
+          
+          if (stillDisconnected) {
+            game.removePlayer(playerInfo.playerName);
+            socket.to(playerInfo.gameCode).emit('player-left', { 
+              playerName: playerInfo.playerName,
+              game: game.toJSON()
+            });
+            
+            if (game.players.length === 0) {
+              games.delete(playerInfo.gameCode);
+              console.log(`Game ${playerInfo.gameCode} deleted - no players left`);
+            }
+          }
+        }, 5000); // Wait 5 seconds before removing player
       }
       playerSockets.delete(socket.id);
     }

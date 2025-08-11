@@ -10,13 +10,20 @@ const LobbyPage = () => {
   const { game, playerName, startGame } = useGame()
 
   useEffect(() => {
-    if (!game || !playerName) {
-      navigate('/')
+    // Navigate to game page when game starts
+    if (game && game.started) {
+      navigate(`/game/${game.code}`)
       return
     }
 
-    if (game.started) {
-      navigate(`/game/${game.code}`)
+    // Only redirect if we definitely don't have game data and it's not loading
+    if (!game && !playerName) {
+      const timer = setTimeout(() => {
+        if (!game && !playerName) {
+          navigate('/')
+        }
+      }, 2000) // Wait 2 seconds for socket connection
+      return () => clearTimeout(timer)
     }
   }, [game, playerName, navigate])
 

@@ -86,10 +86,12 @@ export const GameProvider = ({ children }) => {
 
     const handleGameCreated = (data) => {
       dispatch({ type: 'GAME_CREATED', payload: data.game })
+      // Navigation will be handled by HomePage component
     }
 
     const handleGameJoined = (data) => {
       dispatch({ type: 'GAME_JOINED', payload: data.game })
+      // Navigation will be handled by HomePage component
     }
 
     const handlePlayerJoined = (data) => {
@@ -102,6 +104,7 @@ export const GameProvider = ({ children }) => {
 
     const handleGameStarted = (data) => {
       dispatch({ type: 'GAME_STARTED', payload: data.game })
+      // Navigation will be handled by LobbyPage component
     }
 
     const handlePlayerReadyUpdate = (data) => {

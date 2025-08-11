@@ -13,21 +13,28 @@ const GamePage = () => {
   const [playerReady, setPlayerReadyState] = useState(false)
 
   useEffect(() => {
-    if (!game || !playerName) {
-      navigate('/')
-      return
+    // Only redirect if we definitely don't have game data after waiting
+    if (!game && !playerName) {
+      const timer = setTimeout(() => {
+        if (!game && !playerName) {
+          navigate('/')
+        }
+      }, 2000)
+      return () => clearTimeout(timer)
     }
 
-    if (!game.started) {
+    if (game && !game.started) {
       navigate(`/lobby/${gameCode}`)
       return
     }
 
-    const timer = setTimeout(() => {
-      setShowReadyButton(true)
-    }, 10000) // Show ready button after 10 seconds
+    if (game && game.started) {
+      const timer = setTimeout(() => {
+        setShowReadyButton(true)
+      }, 10000) // Show ready button after 10 seconds
 
-    return () => clearTimeout(timer)
+      return () => clearTimeout(timer)
+    }
   }, [game, playerName, gameCode, navigate])
 
   if (!game || !playerName) {

@@ -20,16 +20,30 @@ export const SocketProvider = ({ children }) => {
       ? window.location.origin 
       : 'http://localhost:3001'
     
-    const newSocket = io(serverUrl)
+    const newSocket = io(serverUrl, {
+      transports: ['websocket', 'polling'],
+      timeout: 20000,
+      forceNew: true
+    })
     
     newSocket.on('connect', () => {
       setConnected(true)
-      console.log('Connected to server')
+      console.log('Connected to server:', newSocket.id)
     })
 
-    newSocket.on('disconnect', () => {
+    newSocket.on('disconnect', (reason) => {
       setConnected(false)
-      console.log('Disconnected from server')
+      console.log('Disconnected from server:', reason)
+    })
+
+    newSocket.on('connect_error', (error) => {
+      console.error('Connection error:', error)
+      setConnected(false)
+    })
+
+    newSocket.on('reconnect', () => {
+      console.log('Reconnected to server')
+      setConnected(true)
     })
 
     setSocket(newSocket)

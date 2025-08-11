@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGame } from '../contexts/GameContext'
 import { useSocket } from '../contexts/SocketContext'
@@ -11,31 +11,30 @@ const HomePage = () => {
   const [gameCode, setGameCode] = useState('')
   const [showJoinForm, setShowJoinForm] = useState(false)
   const navigate = useNavigate()
-  const { createGame, joinGame, error, clearError } = useGame()
+  const { game, createGame, joinGame, error, clearError } = useGame()
   const { connected } = useSocket()
+
+  // Navigate to lobby when game is created or joined
+  useEffect(() => {
+    if (game && game.code) {
+      navigate(`/lobby/${game.code}`)
+    }
+  }, [game, navigate])
 
   const handleCreateGame = (e) => {
     e.preventDefault()
-    if (!playerName.trim()) return
+    if (!playerName.trim() || !connected) return
     
     clearError()
     createGame(playerName.trim())
-    
-    setTimeout(() => {
-      navigate('/lobby/new')
-    }, 100)
   }
 
   const handleJoinGame = (e) => {
     e.preventDefault()
-    if (!playerName.trim() || !gameCode.trim()) return
+    if (!playerName.trim() || !gameCode.trim() || !connected) return
     
     clearError()
     joinGame(gameCode.trim().toUpperCase(), playerName.trim())
-    
-    setTimeout(() => {
-      navigate(`/lobby/${gameCode.trim().toUpperCase()}`)
-    }, 100)
   }
 
   return (
