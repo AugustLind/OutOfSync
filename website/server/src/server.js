@@ -67,6 +67,12 @@ io.on('connection', (socket) => {
       return;
     }
     
+    // Reset activity timeout on any game activity
+    if (game.lastActivityTimeout) {
+      clearTimeout(game.lastActivityTimeout);
+      game.lastActivityTimeout = null;
+    }
+    
     // Check if player is reconnecting to an existing game
     const existingPlayer = game.players.find(p => p.name === playerName);
     
@@ -105,6 +111,12 @@ io.on('connection', (socket) => {
 
     const game = games.get(playerInfo.gameCode);
     if (!game || game.started || game.players.length < 2) return;
+
+    // Reset activity timeout
+    if (game.lastActivityTimeout) {
+      clearTimeout(game.lastActivityTimeout);
+      game.lastActivityTimeout = null;
+    }
 
     const celebrityPair = getCelebrityPair();
     await game.startGame(celebrityPair);
@@ -164,37 +176,26 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     const playerInfo = playerSockets.get(socket.id);
+    playerSockets.delete(socket.id);
+    
     if (playerInfo) {
       const game = games.get(playerInfo.gameCode);
       if (game) {
-        // Don't immediately remove player, give them time to reconnect
-        setTimeout(() => {
-          // Check if player reconnected
-          const stillDisconnected = !Array.from(playerSockets.values())
-            .some(p => p.playerName === playerInfo.playerName && p.gameCode === playerInfo.gameCode);
-          
-          if (stillDisconnected) {
-            game.removePlayer(playerInfo.playerName);
-            socket.to(playerInfo.gameCode).emit('player-left', { 
-              playerName: playerInfo.playerName,
-              game: game.toJSON()
-            });
-            
-            // Only delete game if it's been empty for a longer period (30 minutes)
-            // to prevent accidental deletion during temporary disconnections
-            if (game.players.length === 0) {
-              setTimeout(() => {
-                const gameStillExists = games.get(playerInfo.gameCode);
-                if (gameStillExists && gameStillExists.players.length === 0) {
-                  games.delete(playerInfo.gameCode);
-                  console.log(`Game ${playerInfo.gameCode} deleted - no players left for extended period`);
-                }
-              }, 30 * 60 * 1000); // Wait 30 minutes before deleting empty game
+        console.log(`Player ${playerInfo.playerName} disconnected from game ${playerInfo.gameCode}. Game will persist.`);
+        
+        // Don't remove players or delete games on disconnect
+        // Players can reconnect using the same name
+        // Games will only be deleted after 2 hours of inactivity
+        if (!game.lastActivityTimeout) {
+          game.lastActivityTimeout = setTimeout(() => {
+            const gameStillExists = games.get(playerInfo.gameCode);
+            if (gameStillExists) {
+              games.delete(playerInfo.gameCode);
+              console.log(`Game ${playerInfo.gameCode} deleted after 2 hours of inactivity`);
             }
-          }
-        }, 5000); // Wait 5 seconds before removing player
+          }, 2 * 60 * 60 * 1000); // 2 hours
+        }
       }
-      playerSockets.delete(socket.id);
     }
     console.log('Player disconnected:', socket.id);
   });

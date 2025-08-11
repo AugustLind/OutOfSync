@@ -15,6 +15,7 @@ class Game {
     this.votes = new Map();
     this.gameEnded = false;
     this.winner = null;
+    this.lastActivityTimeout = null;
   }
 
   addPlayer(playerName) {
