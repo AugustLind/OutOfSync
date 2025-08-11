@@ -76,31 +76,58 @@ const GamePage = () => {
 
   if (game.gameEnded) {
     const isWinner = game.winner === playerName
+    const actualOddPlayer = game.players[game.oddPlayerIndex]
+    const wasOddPlayerCorrectlyVoted = actualOddPlayer && actualOddPlayer.name === game.winner
+    
+    // Determine result color: green if correct guess, red if wrong
+    const resultColor = wasOddPlayerCorrectlyVoted ? 'success' : 'destructive'
+    const bgColor = wasOddPlayerCorrectlyVoted ? 'bg-green-50' : 'bg-red-50'
+    
     return (
-      <div className="min-h-screen p-4 flex items-center justify-center">
+      <div className={`min-h-screen p-4 flex items-center justify-center ${bgColor}`}>
         <div className="max-w-md w-full space-y-6">
           <Card className="text-center">
-            <div className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center ${
-              isWinner ? 'bg-success' : 'bg-destructive'
-            }`}>
+            <div className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center bg-${resultColor}`}>
               <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
-                {isWinner ? (
+                {wasOddPlayerCorrectlyVoted ? (
                   <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 ) : (
                   <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                 )}
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-textPrimary mb-2">
-              {isWinner ? 'You were voted most out of sync!' : 'Game Over'}
+            
+            <h2 className={`text-2xl font-bold mb-4 ${wasOddPlayerCorrectlyVoted ? 'text-green-700' : 'text-red-700'}`}>
+              {wasOddPlayerCorrectlyVoted ? 'Correct Guess!' : 'Wrong Guess!'}
             </h2>
-            <p className="text-lg text-textSecondary mb-4">
-              Most voted player: <span className="font-bold">{game.winner}</span>
-            </p>
-            {isOddPlayer && (
-              <div className="text-sm text-textSecondary mb-4">
-                <p>You had the different image ({playerCelebrity})</p>
-                <p>Everyone else had: {isOddPlayer ? game.sameName : game.oddName}</p>
+            
+            <div className="space-y-3 mb-6">
+              <div className="p-3 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-600 font-medium">Most Voted Player:</p>
+                <p className="text-lg font-bold text-blue-800">{game.winner}</p>
+              </div>
+              
+              <div className="p-3 bg-yellow-50 rounded-lg">
+                <p className="text-sm text-yellow-600 font-medium">Actual Odd One Out:</p>
+                <p className="text-lg font-bold text-yellow-800">
+                  {actualOddPlayer ? actualOddPlayer.name : 'Unknown'}
+                </p>
+                <p className="text-sm text-yellow-600 mt-1">
+                  Had image: {game.oddName}
+                </p>
+              </div>
+              
+              <div className="p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-600 font-medium">Everyone Else Had:</p>
+                <p className="text-lg font-bold text-gray-800">{game.sameName}</p>
+              </div>
+            </div>
+            
+            {isWinner && (
+              <div className={`p-3 rounded-lg mb-4 ${isOddPlayer ? 'bg-purple-50' : 'bg-orange-50'}`}>
+                <p className={`text-sm font-medium ${isOddPlayer ? 'text-purple-600' : 'text-orange-600'}`}>
+                  {isOddPlayer ? 'You were the odd one out and got caught!' : 'You got the most votes but weren\'t the odd one out!'}
+                </p>
               </div>
             )}
           </Card>
