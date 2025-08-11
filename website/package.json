@@ -1,0 +1,19 @@
+{
+  "name": "out-of-sync-website",
+  "version": "1.0.0",
+  "description": "Website version of Out of Sync multiplayer game",
+  "scripts": {
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "cd server && npm run dev",
+    "client:dev": "cd client && npm run dev",
+    "build": "cd client && npm install && npm run build && cd ../server && npm install",
+    "start": "cd server && npm start",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "deploy:render": "npm run build && cd server && npm start",
+    "deploy:railway": "npm run build && cd server && npm start",
+    "postinstall": "cd client && npm install && cd ../server && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
