@@ -17,12 +17,15 @@ const LobbyPage = () => {
     }
 
     // Only redirect if we definitely don't have game data and it's not loading
+    // Add more defensive checks to prevent accidental navigation
     if (!game && !playerName) {
       const timer = setTimeout(() => {
+        // Double check that we really don't have game data
         if (!game && !playerName) {
+          console.log('No game or player data found, navigating to home')
           navigate('/')
         }
-      }, 2000) // Wait 2 seconds for socket connection
+      }, 3000) // Increased timeout to 3 seconds
       return () => clearTimeout(timer)
     }
   }, [game, playerName, navigate])

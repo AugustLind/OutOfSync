@@ -22,14 +22,19 @@ const gameReducer = (state, action) => {
     case 'GAME_STARTED':
       return { ...state, game: { ...state.game, ...action.payload } }
     case 'PLAYER_JOINED':
+      // Defensive check to prevent crashes
+      if (!action.payload || !action.payload.game || !action.payload.game.players) {
+        console.error('Invalid PLAYER_JOINED payload:', action.payload)
+        return state
+      }
       return { 
         ...state, 
-        game: { ...state.game, players: action.payload.players }
+        game: { ...state.game, players: action.payload.game.players }
       }
     case 'PLAYER_LEFT':
       return { 
         ...state, 
-        game: { ...state.game, players: action.payload.players }
+        game: { ...state.game, players: action.payload.game.players }
       }
     case 'PLAYER_READY_UPDATE':
       return {
@@ -95,7 +100,12 @@ export const GameProvider = ({ children }) => {
     }
 
     const handlePlayerJoined = (data) => {
-      dispatch({ type: 'PLAYER_JOINED', payload: data })
+      console.log('Player joined event received:', data)
+      try {
+        dispatch({ type: 'PLAYER_JOINED', payload: data })
+      } catch (error) {
+        console.error('Error handling player joined:', error, data)
+      }
     }
 
     const handlePlayerLeft = (data) => {
