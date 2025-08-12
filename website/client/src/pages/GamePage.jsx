@@ -246,85 +246,132 @@ const GamePage = () => {
   }
 
   return (
-    <div className="min-h-screen p-4">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4 relative overflow-hidden">
+      {/* Cinematic background effects */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent"></div>
+      </div>
+
+      <div className="max-w-4xl mx-auto space-y-8 relative z-10">
         <button
           onClick={handleGoHome}
-          className="absolute top-4 left-4 p-2 text-textSecondary hover:text-textPrimary"
+          className="absolute top-0 left-0 p-3 bg-black/20 backdrop-blur-sm rounded-2xl border border-white/10 text-white/60 hover:text-white hover:bg-black/30 transition-all duration-200"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
           </svg>
         </button>
 
-        <Card>
-          {/* Show image only during first 10 seconds when name is visible */}
-          <div className={`overflow-hidden transition-all duration-500 ${
-            showPersonName ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'
-          }`}>
-            <div className={`w-full h-64 rounded-ios overflow-hidden mb-4 border-4 relative ${
-              isOddPlayer ? 'border-destructive' : 'border-success'
+        {/* Main Celebrity Display */}
+        <div className="text-center">
+          <div className="relative max-w-md mx-auto">
+            {/* Cinematic frame for the celebrity image */}
+            <div className={`relative overflow-hidden transition-all duration-700 ${
+              showPersonName ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
             }`}>
-              <img 
-                src={playerImage} 
-                alt={playerCelebrity}
-                className={`w-full h-full object-cover transition-opacity duration-300 ${
-                  imageLoaded ? 'opacity-100' : 'opacity-0'
-                }`}
-                onLoad={() => setImageLoaded(true)}
-                onError={(e) => {
-                  console.log('Image failed to load:', playerImage);
-                  // Try a different reliable fallback
-                  e.target.src = 'https://picsum.photos/id/999/300/300';
-                  setImageLoaded(true);
-                }}
-              />
-              {/* Loading overlay */}
-              {!imageLoaded && (
-                <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
-                  <span className="text-gray-500">Loading image...</span>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          {/* Show the name for first 10 seconds only */}
-          <div className={`overflow-hidden transition-all duration-500 ${
-            showPersonName ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
-          }`}>
-            <div className={`text-center p-4 rounded-ios border-2 mb-4 ${
-              isOddPlayer 
-                ? 'bg-red-50 border-red-300 text-red-800' 
-                : 'bg-green-50 border-green-300 text-green-800'
-            }`}>
-              <div className="space-y-2">
-                <div className="text-xs uppercase tracking-wide font-medium opacity-75">
-                  Your Person
-                </div>
-                <div className="text-xl font-bold">
-                  {playerCelebrity || 'Loading...'}
-                </div>
-                <div className={`text-xs px-2 py-1 rounded-full inline-block ${
+              <div className="relative">
+                {/* Spotlight effect */}
+                <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-black/60 z-10 pointer-events-none"></div>
+                
+                {/* Image container with cinematic styling */}
+                <div className={`relative w-full aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl border-4 ${
                   isOddPlayer 
-                    ? 'bg-red-200 text-red-700' 
-                    : 'bg-green-200 text-green-700'
+                    ? 'border-red-400 shadow-red-500/50' 
+                    : 'border-emerald-400 shadow-emerald-500/50'
                 }`}>
-                  {isOddPlayer ? 'Different Image' : 'Same as Others'}
+                  <img 
+                    src={playerImage} 
+                    alt={playerCelebrity}
+                    className={`w-full h-full object-cover transition-all duration-700 ${
+                      imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
+                    }`}
+                    onLoad={() => setImageLoaded(true)}
+                    onError={(e) => {
+                      console.log('Image failed to load:', playerImage);
+                      e.target.src = 'https://picsum.photos/300/400?random=' + Math.random();
+                      setImageLoaded(true);
+                    }}
+                  />
+                  
+                  {/* Loading state */}
+                  {!imageLoaded && (
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+                        <span className="text-white/60 font-medium">Loading celebrity...</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Film grain overlay */}
+                  <div className="absolute inset-0 opacity-20 mix-blend-overlay bg-repeat bg-[length:200px_200px] pointer-events-none" 
+                       style={{backgroundImage: "url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjEiIGZpbGw9ImJsYWNrIiBvcGFjaXR5PSIwLjMiLz4KPGNpcmNsZSBjeD0iMTUwIiBjeT0iNzUiIHI9IjEiIGZpbGw9ImJsYWNrIiBvcGFjaXR5PSIwLjIiLz4KPGNpcmNsZSBjeD0iNzUiIGN5PSIxMjUiIHI9IjEiIGZpbGw9ImJsYWNrIiBvcGFjaXR5PSIwLjE1Ii8+CjxjaXJjbGUgY3g9IjEyNSIgY3k9IjE1MCIgcj0iMSIgZmlsbD0iYmxhY2siIG9wYWNpdHk9IjAuMjUiLz4KPC9zdmc+')"}}></div>
                 </div>
+                
+                {/* Glowing border effect */}
+                <div className={`absolute inset-0 rounded-3xl border-2 ${
+                  isOddPlayer 
+                    ? 'border-red-400/50 shadow-[0_0_30px_rgba(239,68,68,0.3)]' 
+                    : 'border-emerald-400/50 shadow-[0_0_30px_rgba(52,211,153,0.3)]'
+                } animate-pulse`}></div>
               </div>
             </div>
-          </div>
-          
-          <div className="text-center mt-4">
-            <div className={`inline-block px-4 py-2 rounded-full text-sm font-medium ${
-              isOddPlayer 
-                ? 'bg-destructive bg-opacity-10 text-destructive' 
-                : 'bg-success bg-opacity-10 text-success'
+            
+            {/* Celebrity name display */}
+            <div className={`mt-6 transition-all duration-500 ${
+              showPersonName ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}>
-              {isOddPlayer ? 'You are the odd one out' : 'You are in the group'}
+              <div className={`inline-flex items-center space-x-3 px-6 py-4 rounded-2xl backdrop-blur-md border shadow-lg ${
+                isOddPlayer 
+                  ? 'bg-red-500/10 border-red-400/30 text-red-100' 
+                  : 'bg-emerald-500/10 border-emerald-400/30 text-emerald-100'
+              }`}>
+                <div className={`w-3 h-3 rounded-full ${
+                  isOddPlayer ? 'bg-red-400' : 'bg-emerald-400'
+                } animate-pulse`}></div>
+                <span className="text-sm font-semibold uppercase tracking-wider opacity-75">Your Celebrity</span>
+              </div>
+              
+              <h2 className="text-3xl font-black text-white mt-3 mb-2 tracking-tight">
+                {playerCelebrity || 'Loading...'}
+              </h2>
+              
+              <div className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-bold ${
+                isOddPlayer 
+                  ? 'bg-red-500/20 text-red-300 border border-red-400/30' 
+                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
+              }`}>
+                {isOddPlayer ? (
+                  <>
+                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    You have the different celebrity
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    You're in the main group
+                  </>
+                )}
+              </div>
             </div>
+            
+            {/* Countdown timer for dramatic effect */}
+            {showPersonName && (
+              <div className="mt-4">
+                <div className="w-32 h-1 bg-white/20 rounded-full mx-auto overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-[shrink_10s_linear_forwards]"></div>
+                </div>
+                <p className="text-white/60 text-sm mt-2 font-medium">Study carefully...</p>
+              </div>
+            )}
           </div>
-        </Card>
+        </div>
 
         {playerReady ? (
           <Card className="text-center">
