@@ -31,6 +31,13 @@ const GamePage = () => {
     }
 
     if (game && game.started) {
+      // Reset all local states when game starts
+      setHasVoted(false)
+      setPlayerReadyState(false)
+      setImageLoaded(false)
+      setShowPersonName(true)
+      setShowReadyButton(false)
+      
       const readyButtonTimer = setTimeout(() => {
         setShowReadyButton(true)
       }, 10000) // Show ready button after 10 seconds
@@ -211,21 +218,23 @@ const GamePage = () => {
           <div className="space-y-3">
             {game.players.map((player, index) => {
               const isCurrentPlayer = player.name === playerName
+              
+              // Don't render button for current player at all
+              if (isCurrentPlayer) {
+                return null
+              }
+              
               return (
                 <div 
                   key={index}
-                  className={`transform transition-all duration-200 ${
-                    !isCurrentPlayer ? 'hover:scale-[1.02] hover:shadow-lg' : 'opacity-50'
-                  }`}
+                  className="transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg"
                 >
                   <Button
-                    variant={isCurrentPlayer ? 'secondary' : 'primary'}
+                    variant="primary"
                     size="large"
-                    onClick={() => !isCurrentPlayer && handleVote(player.name)}
-                    disabled={isCurrentPlayer}
-                    className={isCurrentPlayer ? 'cursor-not-allowed' : ''}
+                    onClick={() => handleVote(player.name)}
                   >
-                    {isCurrentPlayer ? `${player.name} (can't vote for yourself)` : player.name}
+                    {player.name}
                   </Button>
                 </div>
               )
@@ -249,29 +258,34 @@ const GamePage = () => {
         </button>
 
         <Card>
-          <div className={`w-full h-64 rounded-ios overflow-hidden mb-4 border-4 relative ${
-            isOddPlayer ? 'border-destructive' : 'border-success'
+          {/* Show image only during first 10 seconds when name is visible */}
+          <div className={`overflow-hidden transition-all duration-500 ${
+            showPersonName ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'
           }`}>
-            <img 
-              src={playerImage} 
-              alt={playerCelebrity}
-              className={`w-full h-full object-cover transition-opacity duration-300 ${
-                imageLoaded ? 'opacity-100' : 'opacity-0'
-              }`}
-              onLoad={() => setImageLoaded(true)}
-              onError={(e) => {
-                console.log('Image failed to load:', playerImage);
-                // Try a different reliable fallback
-                e.target.src = 'https://picsum.photos/id/999/300/300';
-                setImageLoaded(true);
-              }}
-            />
-            {/* Loading overlay */}
-            {!imageLoaded && (
-              <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
-                <span className="text-gray-500">Loading image...</span>
-              </div>
-            )}
+            <div className={`w-full h-64 rounded-ios overflow-hidden mb-4 border-4 relative ${
+              isOddPlayer ? 'border-destructive' : 'border-success'
+            }`}>
+              <img 
+                src={playerImage} 
+                alt={playerCelebrity}
+                className={`w-full h-full object-cover transition-opacity duration-300 ${
+                  imageLoaded ? 'opacity-100' : 'opacity-0'
+                }`}
+                onLoad={() => setImageLoaded(true)}
+                onError={(e) => {
+                  console.log('Image failed to load:', playerImage);
+                  // Try a different reliable fallback
+                  e.target.src = 'https://picsum.photos/id/999/300/300';
+                  setImageLoaded(true);
+                }}
+              />
+              {/* Loading overlay */}
+              {!imageLoaded && (
+                <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
+                  <span className="text-gray-500">Loading image...</span>
+                </div>
+              )}
+            </div>
           </div>
           
           {/* Show the name for first 10 seconds only */}

@@ -17,8 +17,9 @@ const gameReducer = (state, action) => {
       return { ...state, playerName: action.payload }
     case 'GAME_CREATED':
     case 'GAME_JOINED':
-    case 'GAME_UPDATED':
       return { ...state, game: action.payload, error: null }
+    case 'GAME_UPDATED':
+      return { ...state, game: action.payload, error: null, votesCount: 0 }
     case 'GAME_STARTED':
       return { ...state, game: { ...state.game, ...action.payload } }
     case 'PLAYER_JOINED':
