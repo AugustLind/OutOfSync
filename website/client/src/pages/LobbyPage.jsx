@@ -15,20 +15,26 @@ const LobbyPage = () => {
       navigate(`/game/${game.code}`)
       return
     }
+  }, [game, navigate])
 
-    // Only redirect if we definitely don't have game data and it's not loading
-    // Add more defensive checks to prevent accidental navigation
-    if (!game && !playerName) {
+  // Separate effect for handling missing data - only redirect if we're sure there's no data
+  useEffect(() => {
+    if (!game && !playerName && gameCode) {
+      // Try to rejoin the game if we have a game code but no game data
+      console.log('Attempting to rejoin game with code:', gameCode)
+      // Could implement rejoin logic here if needed
+      
+      // Only redirect after a reasonable wait and if socket is connected
       const timer = setTimeout(() => {
-        // Double check that we really don't have game data
         if (!game && !playerName) {
-          console.log('No game or player data found, navigating to home')
+          console.log('No game data available, redirecting to home')
           navigate('/')
         }
-      }, 3000) // Increased timeout to 3 seconds
+      }, 5000) // Give more time for socket connection
+      
       return () => clearTimeout(timer)
     }
-  }, [game, playerName, navigate])
+  }, [game, playerName, gameCode, navigate])
 
   if (!game || !playerName) {
     return (

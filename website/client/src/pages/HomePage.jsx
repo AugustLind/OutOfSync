@@ -10,6 +10,8 @@ const HomePage = () => {
   const [playerName, setPlayerName] = useState('')
   const [gameCode, setGameCode] = useState('')
   const [showJoinForm, setShowJoinForm] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const [joining, setJoining] = useState(false)
   const navigate = useNavigate()
   const { game, createGame, joinGame, error, clearError } = useGame()
   const { connected } = useSocket()
@@ -23,19 +25,37 @@ const HomePage = () => {
 
   const handleCreateGame = (e) => {
     e.preventDefault()
-    if (!playerName.trim() || !connected) return
+    if (!playerName.trim() || !connected || creating) return
     
     clearError()
+    setCreating(true)
     createGame(playerName.trim())
   }
 
   const handleJoinGame = (e) => {
     e.preventDefault()
-    if (!playerName.trim() || !gameCode.trim() || !connected) return
+    if (!playerName.trim() || !gameCode.trim() || !connected || joining) return
     
     clearError()
+    setJoining(true)
     joinGame(gameCode.trim().toUpperCase(), playerName.trim())
   }
+
+  // Reset loading states when navigation happens
+  useEffect(() => {
+    if (game) {
+      setCreating(false)
+      setJoining(false)
+    }
+  }, [game])
+
+  // Reset loading states on error
+  useEffect(() => {
+    if (error) {
+      setCreating(false)
+      setJoining(false)
+    }
+  }, [error])
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -98,9 +118,13 @@ const HomePage = () => {
                 type="submit"
                 variant="primary"
                 size="large"
-                disabled={!connected || !playerName.trim() || (showJoinForm && !gameCode.trim())}
+                disabled={!connected || !playerName.trim() || (showJoinForm && !gameCode.trim()) || creating || joining}
               >
-                {showJoinForm ? 'Join Game' : 'Create New Game'}
+                {showJoinForm ? (
+                  joining ? 'Joining...' : 'Join Game'
+                ) : (
+                  creating ? 'Creating...' : 'Create New Game'
+                )}
               </Button>
 
               <Button

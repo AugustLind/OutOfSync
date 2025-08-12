@@ -207,14 +207,18 @@ const GamePage = () => {
             {game.players.map((player, index) => {
               const isCurrentPlayer = player.name === playerName
               return (
-                <Button
+                <div 
                   key={index}
-                  variant={isCurrentPlayer ? 'destructive' : 'primary'}
-                  size="large"
-                  onClick={() => handleVote(player.name)}
+                  className="transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg"
                 >
-                  {isCurrentPlayer ? `${player.name} (yourself)` : player.name}
-                </Button>
+                  <Button
+                    variant={isCurrentPlayer ? 'destructive' : 'primary'}
+                    size="large"
+                    onClick={() => handleVote(player.name)}
+                  >
+                    {isCurrentPlayer ? `${player.name} (yourself)` : player.name}
+                  </Button>
+                </div>
               )
             })}
           </div>
@@ -248,7 +252,8 @@ const GamePage = () => {
               onLoad={() => setImageLoaded(true)}
               onError={(e) => {
                 console.log('Image failed to load:', playerImage);
-                e.target.src = 'https://picsum.photos/300/300?random=999';
+                // Try a different reliable fallback
+                e.target.src = 'https://picsum.photos/id/999/300/300';
                 setImageLoaded(true);
               }}
             />
@@ -261,8 +266,10 @@ const GamePage = () => {
           </div>
           
           {/* Show the name for first 10 seconds only */}
-          {showPersonName && (
-            <div className={`text-center p-4 rounded-ios border-2 mb-4 transition-all duration-500 ${
+          <div className={`overflow-hidden transition-all duration-500 ${
+            showPersonName ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
+          }`}>
+            <div className={`text-center p-4 rounded-ios border-2 mb-4 ${
               isOddPlayer 
                 ? 'bg-red-50 border-red-300 text-red-800' 
                 : 'bg-green-50 border-green-300 text-green-800'
@@ -283,7 +290,7 @@ const GamePage = () => {
                 </div>
               </div>
             </div>
-          )}
+          </div>
           
           <div className="text-center mt-4">
             <div className={`inline-block px-4 py-2 rounded-full text-sm font-medium ${

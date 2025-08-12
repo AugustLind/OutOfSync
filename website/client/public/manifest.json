@@ -1,0 +1,20 @@
+{
+  "name": "Out of Sync",
+  "short_name": "OutOfSync",
+  "description": "Find out who stands out from the crowd in this multiplayer game",
+  "theme_color": "#007AFF",
+  "background_color": "#F2F2F7",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "32x32",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["games", "entertainment"],
+  "lang": "en"
+}
