@@ -11,6 +11,7 @@ const GamePage = () => {
   const [showReadyButton, setShowReadyButton] = useState(false)
   const [hasVoted, setHasVoted] = useState(false)
   const [playerReady, setPlayerReadyState] = useState(false)
+  const [imageLoaded, setImageLoaded] = useState(false)
 
   useEffect(() => {
     // Only redirect if we definitely don't have game data after waiting
@@ -213,28 +214,52 @@ const GamePage = () => {
         </button>
 
         <Card>
-          <div className={`w-full h-64 rounded-ios overflow-hidden mb-4 border-4 ${
+          <div className={`w-full h-64 rounded-ios overflow-hidden mb-4 border-4 relative ${
             isOddPlayer ? 'border-destructive' : 'border-success'
           }`}>
             <img 
               src={playerImage} 
               alt={playerCelebrity}
-              className="w-full h-full object-cover"
+              className={`w-full h-full object-cover transition-opacity duration-300 ${
+                imageLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+              onLoad={() => setImageLoaded(true)}
               onError={(e) => {
-                e.target.src = 'https://via.placeholder.com/300x300?text=Image+Not+Found'
+                console.log('Image failed to load:', playerImage);
+                e.target.src = 'https://picsum.photos/300/300?random=999';
+                setImageLoaded(true);
               }}
             />
+            {/* Loading overlay */}
+            {!imageLoaded && (
+              <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
+                <span className="text-gray-500">Loading image...</span>
+              </div>
+            )}
           </div>
           
-          {playerCelebrity && (
-            <div className={`text-center p-3 rounded-ios border ${
-              isOddPlayer 
-                ? 'bg-red-50 border-destructive text-destructive' 
-                : 'bg-green-50 border-success text-success'
-            }`}>
-              <p className="font-semibold">{playerCelebrity}</p>
+          {/* Always show the name, make it more prominent */}
+          <div className={`text-center p-4 rounded-ios border-2 mb-4 ${
+            isOddPlayer 
+              ? 'bg-red-50 border-red-300 text-red-800' 
+              : 'bg-green-50 border-green-300 text-green-800'
+          }`}>
+            <div className="space-y-2">
+              <div className="text-xs uppercase tracking-wide font-medium opacity-75">
+                Your Person
+              </div>
+              <div className="text-xl font-bold">
+                {playerCelebrity || 'Loading...'}
+              </div>
+              <div className={`text-xs px-2 py-1 rounded-full inline-block ${
+                isOddPlayer 
+                  ? 'bg-red-200 text-red-700' 
+                  : 'bg-green-200 text-green-700'
+              }`}>
+                {isOddPlayer ? 'Different Image' : 'Same as Others'}
+              </div>
             </div>
-          )}
+          </div>
           
           <div className="text-center mt-4">
             <div className={`inline-block px-4 py-2 rounded-full text-sm font-medium ${
