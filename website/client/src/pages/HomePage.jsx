@@ -21,10 +21,14 @@ const HomePage = () => {
 
   // Navigate to lobby when game is created or joined
   useEffect(() => {
-    if (game && game.code) {
-      navigate(`/lobby/${game.code}`)
+    if (game && game.code && !error) {
+      // Add small delay to ensure state is properly set
+      const timer = setTimeout(() => {
+        navigate(`/lobby/${game.code}`)
+      }, 100)
+      return () => clearTimeout(timer)
     }
-  }, [game, navigate])
+  }, [game, navigate, error])
 
   const handleCreateGame = (e) => {
     e.preventDefault()
@@ -61,28 +65,28 @@ const HomePage = () => {
   }, [error])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4 relative overflow-hidden safe-area">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
       
-      <div className="w-full max-w-lg space-y-8 relative z-10">
+      <div className="w-full max-w-sm sm:max-w-lg space-y-6 relative z-10">
         <div className="text-center">
-          <div className="w-32 h-32 mx-auto mb-8 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-3xl flex items-center justify-center shadow-2xl relative">
+          <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-6 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-3xl flex items-center justify-center shadow-2xl relative">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-3xl blur-sm opacity-50 scale-110"></div>
             <div className="relative">
-              <svg className="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-12 h-12 sm:w-16 sm:h-16 text-white" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           </div>
-          <h1 className="text-5xl font-black bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
             Out of Sync
           </h1>
-          <p className="text-xl text-gray-600 font-medium">Find the celebrity that stands out from the crowd</p>
-          <p className="text-sm text-gray-500 mt-2">A multiplayer guessing game with real celebrity photos</p>
+          <p className="text-lg sm:text-xl text-gray-600 font-medium px-2">Find the celebrity that stands out from the crowd</p>
+          <p className="text-sm text-gray-500 mt-2 px-4">A multiplayer guessing game with real celebrity photos</p>
         </div>
 
         {error && (
@@ -111,7 +115,7 @@ const HomePage = () => {
           </div>
         )}
 
-        <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-3xl p-8 shadow-2xl">
+        <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-3xl p-6 sm:p-8 shadow-2xl">
           <form onSubmit={showJoinForm ? handleJoinGame : handleCreateGame} className="space-y-6">
             <div className="space-y-4">
               <div className="relative">
@@ -122,7 +126,7 @@ const HomePage = () => {
                   onChange={(e) => setPlayerName(e.target.value)}
                   placeholder="Enter your display name"
                   required
-                  className="w-full px-6 py-4 text-lg font-medium rounded-2xl border-0 bg-white/40 backdrop-blur-sm shadow-lg placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-blue-500/30 transition-all duration-200"
+                  className="w-full px-4 py-4 sm:px-6 text-base sm:text-lg font-medium rounded-2xl border-0 bg-white/40 backdrop-blur-sm shadow-lg placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-blue-500/30 transition-all duration-200"
                 />
               </div>
 
@@ -136,7 +140,7 @@ const HomePage = () => {
                     placeholder="Enter 4-character code"
                     maxLength={4}
                     required
-                    className="w-full px-6 py-4 text-2xl font-bold tracking-widest text-center rounded-2xl border-0 bg-white/40 backdrop-blur-sm shadow-lg placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-purple-500/30 transition-all duration-200 uppercase"
+                    className="w-full px-4 py-4 sm:px-6 text-xl sm:text-2xl font-bold tracking-widest text-center rounded-2xl border-0 bg-white/40 backdrop-blur-sm shadow-lg placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-purple-500/30 transition-all duration-200 uppercase"
                   />
                 </div>
               )}
@@ -146,7 +150,7 @@ const HomePage = () => {
               <button
                 type="submit"
                 disabled={!connected || !playerName.trim() || (showJoinForm && !gameCode.trim()) || creating || joining}
-                className="w-full py-4 px-8 text-xl font-bold text-white rounded-2xl bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 shadow-2xl hover:shadow-3xl transform hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full py-4 px-6 text-lg sm:text-xl font-bold text-white rounded-2xl bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 shadow-2xl hover:shadow-3xl transform hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-h-[44px]"
               >
                 {showJoinForm ? (
                   joining ? (
@@ -168,7 +172,7 @@ const HomePage = () => {
               <button
                 type="button"
                 onClick={() => setShowJoinForm(!showJoinForm)}
-                className="w-full py-3 px-6 text-lg font-semibold text-gray-700 rounded-2xl bg-white/30 backdrop-blur-sm border border-white/40 shadow-lg hover:bg-white/40 hover:scale-105 active:scale-95 transition-all duration-200"
+                className="w-full py-3 px-6 text-base sm:text-lg font-semibold text-gray-700 rounded-2xl bg-white/30 backdrop-blur-sm border border-white/40 shadow-lg hover:bg-white/40 hover:scale-105 active:scale-95 transition-all duration-200 min-h-[44px]"
               >
                 {showJoinForm ? '← Create New Game Instead' : 'Join Existing Game →'}
               </button>
@@ -177,7 +181,7 @@ const HomePage = () => {
         </div>
 
         {/* Stats & Feature highlights */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:gap-4">
           <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-6 shadow-lg">
             <div className="flex items-center space-x-3 mb-3">
               <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg">

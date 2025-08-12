@@ -71,6 +71,10 @@ const gameReducer = (state, action) => {
         error: null, 
         votesCount: 0 
       }
+    case 'LEAVE_GAME':
+      return { 
+        ...initialState
+      }
     default:
       return state
   }
@@ -193,7 +197,16 @@ export const GameProvider = ({ children }) => {
   }
 
   const resetGame = () => {
+    // Reset local state immediately to prevent navigation issues
+    dispatch({ type: 'RESET_GAME' })
     socket?.emit('reset-game')
+  }
+
+  const leaveGame = () => {
+    // Immediately clear all game state for leaving
+    dispatch({ type: 'LEAVE_GAME' })
+    // Don't emit reset-game as that's for resetting the game state on server
+    // Just disconnect from current game context
   }
 
   const clearError = () => {
@@ -209,6 +222,7 @@ export const GameProvider = ({ children }) => {
       setPlayerReady,
       vote,
       resetGame,
+      leaveGame,
       clearError
     }}>
       {children}

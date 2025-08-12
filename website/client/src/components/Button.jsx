@@ -9,7 +9,7 @@ const Button = ({
   className = '',
   ...props 
 }) => {
-  const baseClasses = 'font-semibold rounded-ios transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed'
+  const baseClasses = 'font-semibold rounded-ios transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-target no-select'
   
   const variantClasses = {
     primary: 'bg-primary text-white shadow-ios hover:bg-blue-600 active:bg-blue-700',
@@ -19,9 +19,9 @@ const Button = ({
   }
   
   const sizeClasses = {
-    small: 'px-4 py-2 text-sm',
-    normal: 'px-6 py-3 text-base',
-    large: 'px-8 py-4 text-lg w-full'
+    small: 'px-3 py-2 text-sm sm:px-4',
+    normal: 'px-4 py-3 text-base sm:px-6',
+    large: 'px-6 py-4 text-base sm:text-lg w-full sm:px-8'
   }
 
   const classes = [

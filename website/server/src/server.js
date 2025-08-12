@@ -133,7 +133,7 @@ io.on('connection', (socket) => {
       game.lastActivityTimeout = null;
     }
 
-    const celebrityPair = getCelebrityPair();
+    const celebrityPair = await getCelebrityPair();
     await game.startGame(celebrityPair);
     
     io.to(playerInfo.gameCode).emit('game-started', { game: game.toJSON() });

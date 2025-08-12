@@ -7,7 +7,7 @@ import Button from '../components/Button'
 const LobbyPage = () => {
   const { gameCode } = useParams()
   const navigate = useNavigate()
-  const { game, playerName, startGame } = useGame()
+  const { game, playerName, startGame, leaveGame } = useGame()
 
   useEffect(() => {
     // Navigate to game page when game starts
@@ -20,17 +20,13 @@ const LobbyPage = () => {
   // Separate effect for handling missing data - only redirect if we're sure there's no data
   useEffect(() => {
     if (!game && !playerName && gameCode) {
-      // Try to rejoin the game if we have a game code but no game data
-      console.log('Attempting to rejoin game with code:', gameCode)
-      // Could implement rejoin logic here if needed
-      
-      // Only redirect after a reasonable wait and if socket is connected
+      // Only redirect after a shorter wait to improve UX
       const timer = setTimeout(() => {
         if (!game && !playerName) {
           console.log('No game data available, redirecting to home')
           navigate('/')
         }
-      }, 5000) // Give more time for socket connection
+      }, 2000) // Reduced from 5 seconds to 2 seconds
       
       return () => clearTimeout(timer)
     }
@@ -55,45 +51,46 @@ const LobbyPage = () => {
   }
 
   const handleLeaveGame = () => {
+    leaveGame()
     navigate('/')
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-3 sm:p-4 relative overflow-hidden safe-area">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-purple-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
-      <div className="max-w-4xl mx-auto space-y-8 relative z-10">
+      <div className="max-w-2xl sm:max-w-4xl mx-auto space-y-6 sm:space-y-8 relative z-10">
         <div className="text-center relative">
           <button
             onClick={handleLeaveGame}
-            className="absolute top-0 left-0 p-3 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30 text-gray-600 hover:text-gray-800 hover:bg-white/30 transition-all duration-200"
+            className="absolute top-0 left-0 p-3 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30 text-gray-600 hover:text-gray-800 hover:bg-white/30 transition-all duration-200 min-w-[44px] min-h-[44px]"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           
           <div className="mb-6">
-            <h1 className="text-4xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+            <h1 className="text-3xl sm:text-4xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
               Game Lobby
             </h1>
             
             {/* Enhanced Game Code Display */}
-            <div className="inline-flex items-center space-x-4 backdrop-blur-md bg-white/20 border border-white/30 rounded-2xl px-8 py-4 shadow-xl">
+            <div className="inline-flex flex-col sm:flex-row items-center sm:space-x-4 space-y-3 sm:space-y-0 backdrop-blur-md bg-white/20 border border-white/30 rounded-2xl px-4 sm:px-8 py-4 shadow-xl">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
                 <span className="text-sm font-medium text-gray-700">Game Code:</span>
               </div>
-              <div className="text-3xl font-black tracking-widest text-indigo-600 font-mono bg-white/50 px-6 py-2 rounded-xl">
+              <div className="text-2xl sm:text-3xl font-black tracking-widest text-indigo-600 font-mono bg-white/50 px-4 sm:px-6 py-2 rounded-xl">
                 {game.code}
               </div>
               <button 
                 onClick={() => navigator.clipboard.writeText(game.code)}
-                className="p-2 bg-indigo-500/20 hover:bg-indigo-500/30 rounded-xl transition-colors duration-200"
+                className="p-3 bg-indigo-500/20 hover:bg-indigo-500/30 rounded-xl transition-colors duration-200 min-w-[44px] min-h-[44px]"
                 title="Copy game code"
               >
                 <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,17 +102,17 @@ const LobbyPage = () => {
         </div>
 
         {/* Players Section */}
-        <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-3xl p-8 shadow-2xl">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+        <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-3xl p-4 sm:p-8 shadow-2xl">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
                 </svg>
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">Players in Lobby</h2>
-                <p className="text-gray-600">{game.players.length} of 8 players joined</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Players in Lobby</h2>
+                <p className="text-sm sm:text-base text-gray-600">{game.players.length} of 8 players joined</p>
               </div>
             </div>
             
@@ -135,7 +132,7 @@ const LobbyPage = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4">
             {game.players.map((player, index) => {
               const isCurrentPlayer = player.name === playerName
               const isHostPlayer = player.isHost
@@ -266,26 +263,22 @@ const LobbyPage = () => {
             </div>
             <h3 className="text-lg font-bold text-gray-800">How to Play</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 bg-indigo-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</div>
-                <p className="text-sm text-gray-700">Each player gets a celebrity photo - but one person gets a different celebrity!</p>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</div>
-                <p className="text-sm text-gray-700">Study your image carefully for 10 seconds</p>
-              </div>
+          <div className="space-y-3">
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-indigo-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</div>
+              <p className="text-sm text-gray-700">Each player gets a celebrity photo - but one person gets a different celebrity!</p>
             </div>
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 bg-pink-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</div>
-                <p className="text-sm text-gray-700">Vote for who you think has the different celebrity image</p>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">4</div>
-                <p className="text-sm text-gray-700">The player with the most votes is revealed as the "odd one out"</p>
-              </div>
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</div>
+              <p className="text-sm text-gray-700">Study your image carefully for 10 seconds</p>
+            </div>
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-pink-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</div>
+              <p className="text-sm text-gray-700">Vote for who you think has the different celebrity image</p>
+            </div>
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">4</div>
+              <p className="text-sm text-gray-700">The player with the most votes is revealed as the "odd one out"</p>
             </div>
           </div>
         </div>

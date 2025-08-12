@@ -7,11 +7,12 @@ import Button from '../components/Button'
 const GamePage = () => {
   const { gameCode } = useParams()
   const navigate = useNavigate()
-  const { game, playerName, setPlayerReady, vote, resetGame, votesCount } = useGame()
+  const { game, playerName, setPlayerReady, vote, resetGame, leaveGame, votesCount } = useGame()
   const [showReadyButton, setShowReadyButton] = useState(false)
   const [hasVoted, setHasVoted] = useState(false)
   const [playerReady, setPlayerReadyState] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
+  const [imageError, setImageError] = useState(false)
   const [showPersonName, setShowPersonName] = useState(true)
 
   const gameStartedRef = useRef(false)
@@ -32,6 +33,8 @@ const GamePage = () => {
       return
     }
 
+    let readyButtonTimer, nameTimer
+    
     // Only reset states when the game FIRST starts, not on every game update
     if (game && game.started && !gameStartedRef.current) {
       gameStartedRef.current = true
@@ -40,22 +43,23 @@ const GamePage = () => {
       setHasVoted(false)
       setPlayerReadyState(false)
       setImageLoaded(false)
+      setImageError(false)
       setShowPersonName(true)
       setShowReadyButton(false)
       
-      const readyButtonTimer = setTimeout(() => {
+      readyButtonTimer = setTimeout(() => {
         setShowReadyButton(true)
       }, 10000) // Show ready button after 10 seconds
 
       // Hide person name after 10 seconds
-      const nameTimer = setTimeout(() => {
+      nameTimer = setTimeout(() => {
         setShowPersonName(false)
       }, 10000) // Hide name after 10 seconds
+    }
 
-      return () => {
-        clearTimeout(readyButtonTimer)
-        clearTimeout(nameTimer)
-      }
+    return () => {
+      if (readyButtonTimer) clearTimeout(readyButtonTimer)
+      if (nameTimer) clearTimeout(nameTimer)
     }
   }, [game, playerName, gameCode, navigate])
 
@@ -82,6 +86,23 @@ const GamePage = () => {
   const playerImage = isOddPlayer ? game.oddImage : game.sameImage
   const playerCelebrity = isOddPlayer ? game.oddName : game.sameName
 
+  // Preload image when component mounts or game starts
+  React.useEffect(() => {
+    if (playerImage && game.started) {
+      const img = new Image()
+      img.onload = () => {
+        setImageLoaded(true)
+        setImageError(false)
+      }
+      img.onerror = () => {
+        console.log('Failed to preload image:', playerImage)
+        setImageError(true)
+        setImageLoaded(true) // Still set loaded to show fallback
+      }
+      img.src = playerImage
+    }
+  }, [playerImage, game.started])
+
   const handleReady = () => {
     setPlayerReady()
     setPlayerReadyState(true)
@@ -101,7 +122,7 @@ const GamePage = () => {
   }
 
   const handleGoHome = () => {
-    resetGame()
+    leaveGame()
     navigate('/')
   }
 
@@ -118,8 +139,8 @@ const GamePage = () => {
     const bgColor = isPlayerOnLosingSide ? 'bg-red-500' : 'bg-green-50'
     
     return (
-      <div className={`min-h-screen p-4 flex items-center justify-center ${bgColor}`}>
-        <div className="max-w-md w-full space-y-6">
+      <div className={`min-h-screen p-3 sm:p-4 flex items-center justify-center ${bgColor} safe-area`}>
+        <div className="max-w-sm sm:max-w-md w-full space-y-4 sm:space-y-6">
           <Card className={`text-center ${isPlayerOnLosingSide ? 'bg-white/90 backdrop-blur-sm' : ''}`}>
             <div className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center bg-${resultColor}`}>
               <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -177,28 +198,28 @@ const GamePage = () => {
   if (game.votingStarted) {
     if (hasVoted) {
       return (
-        <div className="min-h-screen p-4 flex items-center justify-center">
-          <Card className="text-center max-w-md">
+        <div className="min-h-screen p-3 sm:p-4 flex items-center justify-center safe-area">
+          <Card className="text-center max-w-sm sm:max-w-md">
             <div className="w-16 h-16 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-textPrimary mb-2">Vote Cast!</h2>
-            <p className="text-textSecondary">Waiting for other players to vote...</p>
+            <h2 className="text-lg sm:text-xl font-bold text-textPrimary mb-2">Vote Cast!</h2>
+            <p className="text-sm sm:text-base text-textSecondary">Waiting for other players to vote...</p>
           </Card>
         </div>
       )
     }
 
     return (
-      <div className="min-h-screen p-4">
-        <div className="max-w-2xl mx-auto space-y-6">
+      <div className="min-h-screen p-3 sm:p-4 safe-area">
+        <div className="max-w-lg sm:max-w-2xl mx-auto space-y-4 sm:space-y-6">
           <button
             onClick={handleGoHome}
-            className="absolute top-4 left-4 p-2 text-textSecondary hover:text-textPrimary"
+            className="absolute top-3 left-3 sm:top-4 sm:left-4 p-2 text-textSecondary hover:text-textPrimary touch-target"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
           </button>
@@ -210,8 +231,8 @@ const GamePage = () => {
                 <path fillRule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 002 0V3a2 2 0 012 0v1a1 1 0 002 0V3a2 2 0 012 2v6h-2V8a1 1 0 10-2 0v3H6V8a1 1 0 10-2 0v3H2V5z" clipRule="evenodd" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-textPrimary mb-2">Vote for a Player</h2>
-            <p className="text-textSecondary">Who do you think has the different image?</p>
+            <h2 className="text-lg sm:text-xl font-bold text-textPrimary mb-2">Vote for a Player</h2>
+            <p className="text-sm sm:text-base text-textSecondary">Who do you think has the different image?</p>
             <div className="mt-3">
               <div className="flex items-center justify-between text-sm text-textSecondary mb-2">
                 <span>{votesCount || 0} of {game.players.length} players have voted</span>
@@ -227,7 +248,7 @@ const GamePage = () => {
             </div>
           </Card>
 
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {game.players.map((player, index) => {
               const isCurrentPlayer = player.name === playerName
               
@@ -245,6 +266,7 @@ const GamePage = () => {
                     variant="primary"
                     size="large"
                     onClick={() => handleVote(player.name)}
+                    className="text-base sm:text-lg py-4"
                   >
                     {player.name}
                   </Button>
@@ -258,7 +280,7 @@ const GamePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-3 sm:p-4 relative overflow-hidden safe-area">
       {/* Cinematic background effects */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
@@ -266,19 +288,19 @@ const GamePage = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent"></div>
       </div>
 
-      <div className="max-w-4xl mx-auto space-y-8 relative z-10">
+      <div className="max-w-2xl sm:max-w-4xl mx-auto space-y-6 sm:space-y-8 relative z-10">
         <button
           onClick={handleGoHome}
-          className="absolute top-0 left-0 p-3 bg-black/20 backdrop-blur-sm rounded-2xl border border-white/10 text-white/60 hover:text-white hover:bg-black/30 transition-all duration-200"
+          className="absolute top-0 left-0 p-3 bg-black/20 backdrop-blur-sm rounded-2xl border border-white/10 text-white/60 hover:text-white hover:bg-black/30 transition-all duration-200 min-w-[44px] min-h-[44px]"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
           </svg>
         </button>
 
         {/* Main Game Content */}
         <div className="text-center">
-          <div className="relative max-w-md mx-auto min-h-[500px] flex flex-col justify-center">
+          <div className="relative max-w-xs sm:max-w-md mx-auto min-h-[400px] sm:min-h-[500px] flex flex-col justify-center">
             
             {/* Celebrity Display - Only show during study phase */}
             {showPersonName ? (
@@ -295,19 +317,29 @@ const GamePage = () => {
                         ? 'border-red-400 shadow-red-500/50' 
                         : 'border-emerald-400 shadow-emerald-500/50'
                     }`}>
-                      <img 
-                        src={playerImage} 
-                        alt={playerCelebrity}
-                        className={`w-full h-full object-cover transition-all duration-700 ${
-                          imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
-                        }`}
-                        onLoad={() => setImageLoaded(true)}
-                        onError={(e) => {
-                          console.log('Image failed to load:', playerImage);
-                          e.target.src = 'https://picsum.photos/300/400?random=' + Math.random();
-                          setImageLoaded(true);
-                        }}
-                      />
+                      {imageError ? (
+                        // Fallback placeholder when image fails to load
+                        <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
+                          <div className="text-center text-white">
+                            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                              <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                            <h3 className="text-lg font-bold mb-1">{playerCelebrity}</h3>
+                            <p className="text-sm text-white/60">Celebrity Image</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <img 
+                          src={playerImage} 
+                          alt={playerCelebrity}
+                          className={`w-full h-full object-cover transition-all duration-700 ${
+                            imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
+                          }`}
+                          style={{ display: imageLoaded ? 'block' : 'none' }}
+                        />
+                      )}
                       
                       {/* Loading state */}
                       {!imageLoaded && (
@@ -334,8 +366,8 @@ const GamePage = () => {
                 </div>
                 
                 {/* Celebrity name display */}
-                <div className="mt-6">
-                  <div className={`inline-flex items-center space-x-3 px-6 py-4 rounded-2xl backdrop-blur-md border shadow-lg ${
+                <div className="mt-4 sm:mt-6">
+                  <div className={`inline-flex items-center space-x-2 sm:space-x-3 px-4 sm:px-6 py-3 sm:py-4 rounded-2xl backdrop-blur-md border shadow-lg ${
                     isOddPlayer 
                       ? 'bg-red-500/10 border-red-400/30 text-red-100' 
                       : 'bg-emerald-500/10 border-emerald-400/30 text-emerald-100'
@@ -343,31 +375,33 @@ const GamePage = () => {
                     <div className={`w-3 h-3 rounded-full ${
                       isOddPlayer ? 'bg-red-400' : 'bg-emerald-400'
                     } animate-pulse`}></div>
-                    <span className="text-sm font-semibold uppercase tracking-wider opacity-75">Your Celebrity</span>
+                    <span className="text-xs sm:text-sm font-semibold uppercase tracking-wider opacity-75">Your Celebrity</span>
                   </div>
                   
-                  <h2 className="text-3xl font-black text-white mt-3 mb-2 tracking-tight">
+                  <h2 className="text-2xl sm:text-3xl font-black text-white mt-3 mb-2 tracking-tight px-2">
                     {playerCelebrity || 'Loading...'}
                   </h2>
                   
-                  <div className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-bold ${
+                  <div className={`inline-flex items-center px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold ${
                     isOddPlayer 
                       ? 'bg-red-500/20 text-red-300 border border-red-400/30' 
                       : 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
                   }`}>
                     {isOddPlayer ? (
                       <>
-                        <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                         </svg>
-                        You have the different celebrity
+                        <span className="hidden sm:inline">You have the different celebrity</span>
+                        <span className="sm:hidden">Different celebrity</span>
                       </>
                     ) : (
                       <>
-                        <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
-                        You're in the main group
+                        <span className="hidden sm:inline">You're in the main group</span>
+                        <span className="sm:hidden">Main group</span>
                       </>
                     )}
                   </div>
@@ -385,22 +419,22 @@ const GamePage = () => {
               /* Vote Button Section - Shows when image disappears */
               showReadyButton && !playerReady && (
                 <div className="flex flex-col items-center justify-center h-full transition-all duration-700 animate-in slide-in-from-bottom-5">
-                  <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-3xl p-8 shadow-2xl">
-                    <div className="w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl animate-pulse">
-                      <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-2xl animate-pulse">
+                      <svg className="w-10 h-10 sm:w-12 sm:h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
                     </div>
                     
-                    <h2 className="text-4xl font-black text-white mb-4 tracking-tight">Ready to Vote!</h2>
-                    <p className="text-white/70 mb-8 text-lg">You've studied the celebrity. Now decide who has the different image.</p>
+                    <h2 className="text-2xl sm:text-4xl font-black text-white mb-3 sm:mb-4 tracking-tight">Ready to Vote!</h2>
+                    <p className="text-white/70 mb-6 sm:mb-8 text-base sm:text-lg px-2">You've studied the celebrity. Now decide who has the different image.</p>
                     
                     <button 
                       onClick={handleReady}
-                      className="w-full py-6 px-12 text-2xl font-bold text-white rounded-2xl bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 shadow-2xl hover:shadow-3xl transform hover:scale-105 active:scale-95 transition-all duration-200"
+                      className="w-full py-4 sm:py-6 px-8 sm:px-12 text-lg sm:text-2xl font-bold text-white rounded-2xl bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 shadow-2xl hover:shadow-3xl transform hover:scale-105 active:scale-95 transition-all duration-200 touch-target"
                     >
-                      <div className="flex items-center justify-center space-x-4">
-                        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                      <div className="flex items-center justify-center space-x-2 sm:space-x-4">
+                        <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span>START VOTING ✨</span>
