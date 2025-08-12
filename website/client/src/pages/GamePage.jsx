@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useGame } from '../contexts/GameContext'
 import Card from '../components/Card'
@@ -13,6 +13,8 @@ const GamePage = () => {
   const [playerReady, setPlayerReadyState] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
   const [showPersonName, setShowPersonName] = useState(true)
+
+  const gameStartedRef = useRef(false)
 
   useEffect(() => {
     // Only redirect if we definitely don't have game data after waiting
@@ -30,7 +32,10 @@ const GamePage = () => {
       return
     }
 
-    if (game && game.started) {
+    // Only reset states when the game FIRST starts, not on every game update
+    if (game && game.started && !gameStartedRef.current) {
+      gameStartedRef.current = true
+      
       // Reset all local states when game starts
       setHasVoted(false)
       setPlayerReadyState(false)
@@ -53,6 +58,13 @@ const GamePage = () => {
       }
     }
   }, [game, playerName, gameCode, navigate])
+
+  // Reset the ref when game ends
+  useEffect(() => {
+    if (game && game.gameEnded) {
+      gameStartedRef.current = false
+    }
+  }, [game?.gameEnded])
 
   if (!game || !playerName) {
     return (
@@ -264,173 +276,158 @@ const GamePage = () => {
           </svg>
         </button>
 
-        {/* Main Celebrity Display */}
+        {/* Main Game Content */}
         <div className="text-center">
-          <div className="relative max-w-md mx-auto">
-            {/* Cinematic frame for the celebrity image */}
-            <div className={`relative overflow-hidden transition-all duration-700 ${
-              showPersonName ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
-            }`}>
-              <div className="relative">
-                {/* Spotlight effect */}
-                <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-black/60 z-10 pointer-events-none"></div>
-                
-                {/* Image container with cinematic styling */}
-                <div className={`relative w-full aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl border-4 ${
-                  isOddPlayer 
-                    ? 'border-red-400 shadow-red-500/50' 
-                    : 'border-emerald-400 shadow-emerald-500/50'
-                }`}>
-                  <img 
-                    src={playerImage} 
-                    alt={playerCelebrity}
-                    className={`w-full h-full object-cover transition-all duration-700 ${
-                      imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
-                    }`}
-                    onLoad={() => setImageLoaded(true)}
-                    onError={(e) => {
-                      console.log('Image failed to load:', playerImage);
-                      e.target.src = 'https://picsum.photos/300/400?random=' + Math.random();
-                      setImageLoaded(true);
-                    }}
-                  />
-                  
-                  {/* Loading state */}
-                  {!imageLoaded && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-                        <span className="text-white/60 font-medium">Loading celebrity...</span>
-                      </div>
+          <div className="relative max-w-md mx-auto min-h-[500px] flex flex-col justify-center">
+            
+            {/* Celebrity Display - Only show during study phase */}
+            {showPersonName ? (
+              <div className="transition-all duration-700">
+                {/* Cinematic frame for the celebrity image */}
+                <div className="relative overflow-hidden">
+                  <div className="relative">
+                    {/* Spotlight effect */}
+                    <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-black/60 z-10 pointer-events-none"></div>
+                    
+                    {/* Image container with cinematic styling */}
+                    <div className={`relative w-full aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl border-4 ${
+                      isOddPlayer 
+                        ? 'border-red-400 shadow-red-500/50' 
+                        : 'border-emerald-400 shadow-emerald-500/50'
+                    }`}>
+                      <img 
+                        src={playerImage} 
+                        alt={playerCelebrity}
+                        className={`w-full h-full object-cover transition-all duration-700 ${
+                          imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
+                        }`}
+                        onLoad={() => setImageLoaded(true)}
+                        onError={(e) => {
+                          console.log('Image failed to load:', playerImage);
+                          e.target.src = 'https://picsum.photos/300/400?random=' + Math.random();
+                          setImageLoaded(true);
+                        }}
+                      />
+                      
+                      {/* Loading state */}
+                      {!imageLoaded && (
+                        <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+                            <span className="text-white/60 font-medium">Loading celebrity...</span>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Film grain overlay */}
+                      <div className="absolute inset-0 opacity-20 mix-blend-overlay bg-repeat bg-[length:200px_200px] pointer-events-none" 
+                           style={{backgroundImage: "url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjEiIGZpbGw9ImJsYWNrIiBvcGFjaXR5PSIwLjMiLz4KPGNpcmNsZSBjeD0iMTUwIiBjeT0iNzUiIHI9IjEiIGZpbGw9ImJsYWNrIiBvcGFjaXR5PSIwLjIiLz4KPGNpcmNsZSBjeD0iNzUiIGN5PSIxMjUiIHI9IjEiIGZpbGw9ImJsYWNrIiBvcGFjaXR5PSIwLjE1Ii8+CjxjaXJjbGUgY3g9IjEyNSIgY3k9IjE1MCIgcj0iMSIgZmlsbD0iYmxhY2siIG9wYWNpdHk9IjAuMjUiLz4KPC9zdmc+')"}}></div>
                     </div>
-                  )}
-                  
-                  {/* Film grain overlay */}
-                  <div className="absolute inset-0 opacity-20 mix-blend-overlay bg-repeat bg-[length:200px_200px] pointer-events-none" 
-                       style={{backgroundImage: "url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjEiIGZpbGw9ImJsYWNrIiBvcGFjaXR5PSIwLjMiLz4KPGNpcmNsZSBjeD0iMTUwIiBjeT0iNzUiIHI9IjEiIGZpbGw9ImJsYWNrIiBvcGFjaXR5PSIwLjIiLz4KPGNpcmNsZSBjeD0iNzUiIGN5PSIxMjUiIHI9IjEiIGZpbGw9ImJsYWNrIiBvcGFjaXR5PSIwLjE1Ii8+CjxjaXJjbGUgY3g9IjEyNSIgY3k9IjE1MCIgcj0iMSIgZmlsbD0iYmxhY2siIG9wYWNpdHk9IjAuMjUiLz4KPC9zdmc+')"}}></div>
+                    
+                    {/* Glowing border effect */}
+                    <div className={`absolute inset-0 rounded-3xl border-2 ${
+                      isOddPlayer 
+                        ? 'border-red-400/50 shadow-[0_0_30px_rgba(239,68,68,0.3)]' 
+                        : 'border-emerald-400/50 shadow-[0_0_30px_rgba(52,211,153,0.3)]'
+                    } animate-pulse`}></div>
+                  </div>
                 </div>
                 
-                {/* Glowing border effect */}
-                <div className={`absolute inset-0 rounded-3xl border-2 ${
-                  isOddPlayer 
-                    ? 'border-red-400/50 shadow-[0_0_30px_rgba(239,68,68,0.3)]' 
-                    : 'border-emerald-400/50 shadow-[0_0_30px_rgba(52,211,153,0.3)]'
-                } animate-pulse`}></div>
+                {/* Celebrity name display */}
+                <div className="mt-6">
+                  <div className={`inline-flex items-center space-x-3 px-6 py-4 rounded-2xl backdrop-blur-md border shadow-lg ${
+                    isOddPlayer 
+                      ? 'bg-red-500/10 border-red-400/30 text-red-100' 
+                      : 'bg-emerald-500/10 border-emerald-400/30 text-emerald-100'
+                  }`}>
+                    <div className={`w-3 h-3 rounded-full ${
+                      isOddPlayer ? 'bg-red-400' : 'bg-emerald-400'
+                    } animate-pulse`}></div>
+                    <span className="text-sm font-semibold uppercase tracking-wider opacity-75">Your Celebrity</span>
+                  </div>
+                  
+                  <h2 className="text-3xl font-black text-white mt-3 mb-2 tracking-tight">
+                    {playerCelebrity || 'Loading...'}
+                  </h2>
+                  
+                  <div className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-bold ${
+                    isOddPlayer 
+                      ? 'bg-red-500/20 text-red-300 border border-red-400/30' 
+                      : 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
+                  }`}>
+                    {isOddPlayer ? (
+                      <>
+                        <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        You have the different celebrity
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        You're in the main group
+                      </>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Countdown timer */}
+                <div className="mt-4">
+                  <div className="w-32 h-1 bg-white/20 rounded-full mx-auto overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-[shrink_10s_linear_forwards]"></div>
+                  </div>
+                  <p className="text-white/60 text-sm mt-2 font-medium">Study carefully...</p>
+                </div>
               </div>
-            </div>
+            ) : (
+              /* Vote Button Section - Shows when image disappears */
+              showReadyButton && !playerReady && (
+                <div className="flex flex-col items-center justify-center h-full transition-all duration-700 animate-in slide-in-from-bottom-5">
+                  <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-3xl p-8 shadow-2xl">
+                    <div className="w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl animate-pulse">
+                      <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    
+                    <h2 className="text-4xl font-black text-white mb-4 tracking-tight">Ready to Vote!</h2>
+                    <p className="text-white/70 mb-8 text-lg">You've studied the celebrity. Now decide who has the different image.</p>
+                    
+                    <button 
+                      onClick={handleReady}
+                      className="w-full py-6 px-12 text-2xl font-bold text-white rounded-2xl bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 shadow-2xl hover:shadow-3xl transform hover:scale-105 active:scale-95 transition-all duration-200"
+                    >
+                      <div className="flex items-center justify-center space-x-4">
+                        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>START VOTING ✨</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )
+            )}
             
-            {/* Celebrity name display */}
-            <div className={`mt-6 transition-all duration-500 ${
-              showPersonName ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}>
-              <div className={`inline-flex items-center space-x-3 px-6 py-4 rounded-2xl backdrop-blur-md border shadow-lg ${
-                isOddPlayer 
-                  ? 'bg-red-500/10 border-red-400/30 text-red-100' 
-                  : 'bg-emerald-500/10 border-emerald-400/30 text-emerald-100'
-              }`}>
-                <div className={`w-3 h-3 rounded-full ${
-                  isOddPlayer ? 'bg-red-400' : 'bg-emerald-400'
-                } animate-pulse`}></div>
-                <span className="text-sm font-semibold uppercase tracking-wider opacity-75">Your Celebrity</span>
-              </div>
-              
-              <h2 className="text-3xl font-black text-white mt-3 mb-2 tracking-tight">
-                {playerCelebrity || 'Loading...'}
-              </h2>
-              
-              <div className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-bold ${
-                isOddPlayer 
-                  ? 'bg-red-500/20 text-red-300 border border-red-400/30' 
-                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
-              }`}>
-                {isOddPlayer ? (
-                  <>
-                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                    You have the different celebrity
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            {/* Player Ready State */}
+            {playerReady && (
+              <div className="flex flex-col items-center justify-center h-full">
+                <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-3xl p-8 shadow-2xl text-center">
+                  <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg className="w-10 h-10 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                    You're in the main group
-                  </>
-                )}
-              </div>
-            </div>
-            
-            {/* Countdown timer for dramatic effect */}
-            {showPersonName && (
-              <div className="mt-4">
-                <div className="w-32 h-1 bg-white/20 rounded-full mx-auto overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-[shrink_10s_linear_forwards]"></div>
+                  </div>
+                  <h2 className="text-2xl font-bold text-white mb-2">You're Ready!</h2>
+                  <p className="text-white/60">Waiting for other players to get ready...</p>
                 </div>
-                <p className="text-white/60 text-sm mt-2 font-medium">Study carefully...</p>
               </div>
             )}
           </div>
         </div>
 
-        {playerReady ? (
-          <Card className="text-center">
-            <div className="w-16 h-16 bg-success bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-success" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold text-textPrimary mb-2">You're Ready!</h2>
-            <p className="text-textSecondary">Waiting for other players to get ready...</p>
-          </Card>
-        ) : showReadyButton && !showPersonName ? (
-          <Card className="text-center">
-            <div className="w-20 h-20 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-10 h-10 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <h2 className="text-3xl font-bold text-textPrimary mb-4">Ready to Vote!</h2>
-            <p className="text-textSecondary mb-8">You've studied the image. Now decide who has the different picture.</p>
-            <Button 
-              variant="primary" 
-              size="large" 
-              onClick={handleReady}
-              className="!text-2xl !py-6 !px-12 !min-h-[80px] shadow-xl transform hover:scale-105 transition-all duration-200"
-            >
-              <div className="flex items-center space-x-3">
-                <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>VOTE</span>
-              </div>
-            </Button>
-          </Card>
-        ) : showReadyButton ? (
-          <Card className="text-center">
-            <div className="w-16 h-16 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold text-textPrimary mb-2">Study the Image</h2>
-            <p className="text-textSecondary mb-6">Look carefully and prepare to vote</p>
-            <div className="text-sm text-textSecondary">
-              Large vote button will appear when name disappears...
-            </div>
-          </Card>
-        ) : (
-          <Card className="text-center">
-            <div className="w-16 h-16 bg-warning bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-warning" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold text-textPrimary mb-2">Studying Image...</h2>
-            <p className="text-textSecondary">Look at your image carefully. The voting button will appear soon.</p>
-          </Card>
-        )}
       </div>
     </div>
   )
