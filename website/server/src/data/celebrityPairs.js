@@ -1,5 +1,3 @@
-const fetch = require('node-fetch'); // Make sure to npm install node-fetch if needed
-
 const apiKey = '68bbae5435ef0a5d327177f781201b93';
 const baseImageUrl = 'https://image.tmdb.org/t/p/w300_and_h450_bestv2';
 
