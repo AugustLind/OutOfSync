@@ -115,6 +115,21 @@ class Game {
     return playerIndex === this.oddPlayerIndex;
   }
 
+  resetGame() {
+    this.started = false;
+    this.oddPlayerIndex = null;
+    this.sameImage = null;
+    this.oddImage = null;
+    this.sameName = null;
+    this.oddName = null;
+    this.description = null;
+    this.readyPlayers.clear();
+    this.votingStarted = false;
+    this.votes.clear();
+    this.gameEnded = false;
+    this.winner = null;
+  }
+
   toJSON() {
     return {
       code: this.code,

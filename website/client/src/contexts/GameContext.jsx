@@ -137,6 +137,10 @@ export const GameProvider = ({ children }) => {
       dispatch({ type: 'SET_ERROR', payload: data.message })
     }
 
+    const handleGameReset = (data) => {
+      dispatch({ type: 'GAME_UPDATED', payload: data.game })
+    }
+
     socket.on('game-created', handleGameCreated)
     socket.on('game-joined', handleGameJoined)
     socket.on('player-joined', handlePlayerJoined)
@@ -146,6 +150,7 @@ export const GameProvider = ({ children }) => {
     socket.on('voting-started', handleVotingStarted)
     socket.on('vote-cast', handleVoteCast)
     socket.on('game-ended', handleGameEnded)
+    socket.on('game-reset', handleGameReset)
     socket.on('error', handleError)
 
     return () => {
@@ -158,6 +163,7 @@ export const GameProvider = ({ children }) => {
       socket.off('voting-started', handleVotingStarted)
       socket.off('vote-cast', handleVoteCast)
       socket.off('game-ended', handleGameEnded)
+      socket.off('game-reset', handleGameReset)
       socket.off('error', handleError)
     }
   }, [socket])
@@ -186,7 +192,7 @@ export const GameProvider = ({ children }) => {
   }
 
   const resetGame = () => {
-    dispatch({ type: 'RESET_GAME' })
+    socket?.emit('reset-game')
   }
 
   const clearError = () => {

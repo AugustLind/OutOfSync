@@ -189,6 +189,21 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('reset-game', () => {
+    const playerInfo = playerSockets.get(socket.id);
+    if (!playerInfo) return;
+
+    const game = games.get(playerInfo.gameCode);
+    if (!game) return;
+
+    // Reset the game to lobby state
+    game.resetGame();
+    
+    // Notify all players that the game was reset and they're back in lobby
+    io.to(playerInfo.gameCode).emit('game-reset', { game: game.toJSON() });
+    console.log(`Game ${playerInfo.gameCode} was reset by ${playerInfo.playerName}`);
+  });
+
   socket.on('disconnect', () => {
     const playerInfo = playerSockets.get(socket.id);
     playerSockets.delete(socket.id);

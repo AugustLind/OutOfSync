@@ -75,8 +75,10 @@ const GamePage = () => {
   }
 
   const handleNewGame = () => {
+    // Instead of going home, navigate to lobby to start a new game with same players
+    navigate(`/lobby/${gameCode}`)
+    // Reset the game state
     resetGame()
-    navigate('/')
   }
 
   const handleGoHome = () => {
@@ -89,14 +91,17 @@ const GamePage = () => {
     const actualOddPlayer = game.players[game.oddPlayerIndex]
     const wasOddPlayerCorrectlyVoted = actualOddPlayer && actualOddPlayer.name === game.winner
     
+    // Determine if this player is on the losing side
+    const isPlayerOnLosingSide = !wasOddPlayerCorrectlyVoted
+    
     // Determine result color: green if correct guess, red if wrong
     const resultColor = wasOddPlayerCorrectlyVoted ? 'success' : 'destructive'
-    const bgColor = wasOddPlayerCorrectlyVoted ? 'bg-green-50' : 'bg-red-50'
+    const bgColor = isPlayerOnLosingSide ? 'bg-red-500' : 'bg-green-50'
     
     return (
       <div className={`min-h-screen p-4 flex items-center justify-center ${bgColor}`}>
         <div className="max-w-md w-full space-y-6">
-          <Card className="text-center">
+          <Card className={`text-center ${isPlayerOnLosingSide ? 'bg-white/90 backdrop-blur-sm' : ''}`}>
             <div className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center bg-${resultColor}`}>
               <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
                 {wasOddPlayerCorrectlyVoted ? (
@@ -143,7 +148,7 @@ const GamePage = () => {
           </Card>
           
           <Button variant="primary" size="large" onClick={handleNewGame}>
-            Play Again
+            New Game
           </Button>
         </div>
       </div>
@@ -209,14 +214,18 @@ const GamePage = () => {
               return (
                 <div 
                   key={index}
-                  className="transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg"
+                  className={`transform transition-all duration-200 ${
+                    !isCurrentPlayer ? 'hover:scale-[1.02] hover:shadow-lg' : 'opacity-50'
+                  }`}
                 >
                   <Button
-                    variant={isCurrentPlayer ? 'destructive' : 'primary'}
+                    variant={isCurrentPlayer ? 'secondary' : 'primary'}
                     size="large"
-                    onClick={() => handleVote(player.name)}
+                    onClick={() => !isCurrentPlayer && handleVote(player.name)}
+                    disabled={isCurrentPlayer}
+                    className={isCurrentPlayer ? 'cursor-not-allowed' : ''}
                   >
-                    {isCurrentPlayer ? `${player.name} (yourself)` : player.name}
+                    {isCurrentPlayer ? `${player.name} (can't vote for yourself)` : player.name}
                   </Button>
                 </div>
               )
@@ -313,6 +322,29 @@ const GamePage = () => {
             <h2 className="text-xl font-bold text-textPrimary mb-2">You're Ready!</h2>
             <p className="text-textSecondary">Waiting for other players to get ready...</p>
           </Card>
+        ) : showReadyButton && !showPersonName ? (
+          <Card className="text-center">
+            <div className="w-20 h-20 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-10 h-10 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <h2 className="text-3xl font-bold text-textPrimary mb-4">Ready to Vote!</h2>
+            <p className="text-textSecondary mb-8">You've studied the image. Now decide who has the different picture.</p>
+            <Button 
+              variant="primary" 
+              size="large" 
+              onClick={handleReady}
+              className="!text-2xl !py-6 !px-12 !min-h-[80px] shadow-xl transform hover:scale-105 transition-all duration-200"
+            >
+              <div className="flex items-center space-x-3">
+                <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>VOTE</span>
+              </div>
+            </Button>
+          </Card>
         ) : showReadyButton ? (
           <Card className="text-center">
             <div className="w-16 h-16 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -323,9 +355,9 @@ const GamePage = () => {
             </div>
             <h2 className="text-xl font-bold text-textPrimary mb-2">Study the Image</h2>
             <p className="text-textSecondary mb-6">Look carefully and prepare to vote</p>
-            <Button variant="primary" size="large" onClick={handleReady}>
-              Ready to Vote
-            </Button>
+            <div className="text-sm text-textSecondary">
+              Large vote button will appear when name disappears...
+            </div>
           </Card>
         ) : (
           <Card className="text-center">
