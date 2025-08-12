@@ -7,11 +7,12 @@ import Button from '../components/Button'
 const GamePage = () => {
   const { gameCode } = useParams()
   const navigate = useNavigate()
-  const { game, playerName, setPlayerReady, vote, resetGame } = useGame()
+  const { game, playerName, setPlayerReady, vote, resetGame, votesCount } = useGame()
   const [showReadyButton, setShowReadyButton] = useState(false)
   const [hasVoted, setHasVoted] = useState(false)
   const [playerReady, setPlayerReadyState] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
+  const [showPersonName, setShowPersonName] = useState(true)
 
   useEffect(() => {
     // Only redirect if we definitely don't have game data after waiting
@@ -30,11 +31,19 @@ const GamePage = () => {
     }
 
     if (game && game.started) {
-      const timer = setTimeout(() => {
+      const readyButtonTimer = setTimeout(() => {
         setShowReadyButton(true)
       }, 10000) // Show ready button after 10 seconds
 
-      return () => clearTimeout(timer)
+      // Hide person name after 10 seconds
+      const nameTimer = setTimeout(() => {
+        setShowPersonName(false)
+      }, 10000) // Hide name after 10 seconds
+
+      return () => {
+        clearTimeout(readyButtonTimer)
+        clearTimeout(nameTimer)
+      }
     }
   }, [game, playerName, gameCode, navigate])
 
@@ -179,6 +188,19 @@ const GamePage = () => {
             </div>
             <h2 className="text-xl font-bold text-textPrimary mb-2">Vote for a Player</h2>
             <p className="text-textSecondary">Who do you think has the different image?</p>
+            <div className="mt-3">
+              <div className="flex items-center justify-between text-sm text-textSecondary mb-2">
+                <span>{votesCount || 0} of {game.players.length} players have voted</span>
+                <span>{Math.round(((votesCount || 0) / game.players.length) * 100)}%</span>
+              </div>
+              {/* Progress bar */}
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-primary h-2 rounded-full transition-all duration-300" 
+                  style={{ width: `${((votesCount || 0) / game.players.length) * 100}%` }}
+                ></div>
+              </div>
+            </div>
           </Card>
 
           <div className="space-y-3">
@@ -238,28 +260,30 @@ const GamePage = () => {
             )}
           </div>
           
-          {/* Always show the name, make it more prominent */}
-          <div className={`text-center p-4 rounded-ios border-2 mb-4 ${
-            isOddPlayer 
-              ? 'bg-red-50 border-red-300 text-red-800' 
-              : 'bg-green-50 border-green-300 text-green-800'
-          }`}>
-            <div className="space-y-2">
-              <div className="text-xs uppercase tracking-wide font-medium opacity-75">
-                Your Person
-              </div>
-              <div className="text-xl font-bold">
-                {playerCelebrity || 'Loading...'}
-              </div>
-              <div className={`text-xs px-2 py-1 rounded-full inline-block ${
-                isOddPlayer 
-                  ? 'bg-red-200 text-red-700' 
-                  : 'bg-green-200 text-green-700'
-              }`}>
-                {isOddPlayer ? 'Different Image' : 'Same as Others'}
+          {/* Show the name for first 10 seconds only */}
+          {showPersonName && (
+            <div className={`text-center p-4 rounded-ios border-2 mb-4 transition-all duration-500 ${
+              isOddPlayer 
+                ? 'bg-red-50 border-red-300 text-red-800' 
+                : 'bg-green-50 border-green-300 text-green-800'
+            }`}>
+              <div className="space-y-2">
+                <div className="text-xs uppercase tracking-wide font-medium opacity-75">
+                  Your Person
+                </div>
+                <div className="text-xl font-bold">
+                  {playerCelebrity || 'Loading...'}
+                </div>
+                <div className={`text-xs px-2 py-1 rounded-full inline-block ${
+                  isOddPlayer 
+                    ? 'bg-red-200 text-red-700' 
+                    : 'bg-green-200 text-green-700'
+                }`}>
+                  {isOddPlayer ? 'Different Image' : 'Same as Others'}
+                </div>
               </div>
             </div>
-          </div>
+          )}
           
           <div className="text-center mt-4">
             <div className={`inline-block px-4 py-2 rounded-full text-sm font-medium ${
