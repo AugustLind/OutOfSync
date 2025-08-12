@@ -10,8 +10,8 @@ const celebrityPairs = [
   {
     "pairId": 2,
     "description": "Pop superstars",
-    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/Ia3dzj7kJdvsT19ynAG8bJkDVPu.jpg",
-    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/r3vBjPyuMCBQ0Y0x3IqVcZRzweO.jpg",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/bC4d0I4nNOy5oU5A1b2Vf0m5p2s.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/yCiEf4sNCws9g2G3bXT4Jq02Ek3.jpg",
     "sameName": "Taylor Swift",
     "oddName": "Ariana Grande"
   },
@@ -89,8 +89,8 @@ const celebrityPairs = [
   },
   {
     "pairId": 12,
-    "description": "Streaming giants",
-    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/ywNEKJi7oXJzrr8wHSAVcMnLqWv.jpg",
+    "description": "The Two Ryans",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/4SYq1623yvs9T1Tq9v9yv942IQP.jpg",
     "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/9cUrSV5S1J8IVyZPuRNLnpIBUfQ.jpg",
     "sameName": "Ryan Reynolds",
     "oddName": "Ryan Gosling"
@@ -99,7 +99,7 @@ const celebrityPairs = [
     "pairId": 13,
     "description": "Fashion icons",
     "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/o08MSs9gWAMBg9sJM7m0kbHAVJz.jpg",
-    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/dQx8kHSoHhIc6HwGnRUZnPSHPD1.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/6p2tFwmyk2LgA0M5Yy3W7aK3sY2.jpg",
     "sameName": "Margot Robbie",
     "oddName": "Scarlett Johansson"
   },
@@ -170,7 +170,7 @@ const celebrityPairs = [
   {
     "pairId": 22,
     "description": "Norwegian DJs",
-    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/p0Ojj53fS2gVzP1k821UfBfqGv9.jpg",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/iN4dSoO1JLE2pT12D321p48l1s.jpg",
     "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/s9e3UE2ihT3wP629r5u8Yp5WpD8.jpg",
     "sameName": "Kygo",
     "oddName": "Alan Walker"
@@ -182,6 +182,142 @@ const celebrityPairs = [
     "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/hOUA6s2Hg9unQ7sT1qT3h2S2YpU.jpg",
     "sameName": "Mads Mikkelsen",
     "oddName": "Pål Sverre Hagen"
+  },
+  {
+    "pairId": 24,
+    "description": "The Two Chrises",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/cMD9Ygz11zjJzAovURpO75Qg7rT.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/xnopI5Xtky18MPhK40cZAGAOVeV.jpg",
+    "sameName": "Chris Hemsworth",
+    "oddName": "Chris Pratt"
+  },
+  {
+    "pairId": 25,
+    "description": "Korean superstars",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/jSkGS6IHRhwZqPKCwxn8gUrCHH3.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/je3HUhfGTyWpX8IzL2hiCul8pLA.jpg",
+    "sameName": "Park Seo-joon",
+    "oddName": "Son Heung-min"
+  },
+  {
+    "pairId": 26,
+    "description": "'Barbie' stars",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/o08MSs9gWAMBg9sJM7m0kbHAVJz.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/9cUrSV5S1J8IVyZPuRNLnpIBUfQ.jpg",
+    "sameName": "Margot Robbie",
+    "oddName": "Ryan Gosling"
+  },
+  {
+    "pairId": 27,
+    "description": "Billionaire tech titans",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/rFkN0r3apV5fPjpKYdF6gBXhGRU.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/vOo2Q0K6T7O5gYYIyzLNxjc2Voz.jpg",
+    "sameName": "Elon Musk",
+    "oddName": "Jeff Bezos"
+  },
+  {
+    "pairId": 28,
+    "description": "Legendary comedians",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/uKHEpHSuvJgVLETrU0BxcaorySE.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/oo8IeDY2sl1g2MDfNgOFh8J1neT.jpg",
+    "sameName": "Eddie Murphy",
+    "oddName": "Jim Carrey"
+  },
+  {
+    "pairId": 29,
+    "description": "Tennis legends",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/iZ6mAd1pDmMa3lBuJSQV5bfYizh.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/qsYMCcJznZQSIxJSgvHwcBW9KyC.jpg",
+    "sameName": "Serena Williams",
+    "oddName": "Venus Williams"
+  },
+  {
+    "pairId": 30,
+    "description": "Soccer superstars",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/b0G4Rk0JDBx1yJsFEpm2XjRRVvT.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/tO7nD6MH7H8fZ8ekPxsQ3d0Pcbz.jpg",
+    "sameName": "Lionel Messi",
+    "oddName": "Cristiano Ronaldo"
+  },
+  {
+    "pairId": 31,
+    "description": "Female rap queens",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/5m9njwZqRDvW6VxI2fN1ae5Zkha.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/3A15l2PcAshSBjiFwD76KkKJcyO.jpg",
+    "sameName": "Nicki Minaj",
+    "oddName": "Cardi B"
+  },
+  {
+    "pairId": 32,
+    "description": "The Hemsworths",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/cMD9Ygz11zjJzAovURpO75Qg7rT.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/eybN4AxwRJ3O8wEM7WoaHRJPV5g.jpg",
+    "sameName": "Chris Hemsworth",
+    "oddName": "Liam Hemsworth"
+  },
+  {
+    "pairId": 33,
+    "description": "Vintage Hollywood",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/qW5vtrj97slKOMwU5VUEQwEqnHL.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/h2xRo1eyN1p8gNYRjhAraqp5IKz.jpg",
+    "sameName": "Marilyn Monroe",
+    "oddName": "Audrey Hepburn"
+  },
+  {
+    "pairId": 34,
+    "description": "K-pop idols",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/a7pJj0KfrXEY6XhauhdGuf3Yx8L.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/rD8aaIyXnJJy7CDdqFnJ9vt3Ksf.jpg",
+    "sameName": "Lisa (BLACKPINK)",
+    "oddName": "Jennie (BLACKPINK)"
+  },
+  {
+    "pairId": 35,
+    "description": "Streaming era artists",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/aSvHDpJvMv5D9z2sSu0gz9VzIgL.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/oTdzKvU2pKPJOSMPdtCW7wAcZfV.jpg",
+    "sameName": "Billie Eilish",
+    "oddName": "Olivia Rodrigo"
+  },
+  {
+    "pairId": 36,
+    "description": "WWE superstars",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/yv7n3Tyn3CnmShd8xIcrUOJaLEu.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/cgoy7t5Ve075naBPcewZrc08qGw.jpg",
+    "sameName": "John Cena",
+    "oddName": "Dave Bautista"
+  },
+  {
+    "pairId": 37,
+    "description": "Late night hosts",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/gYkKrpbSzyP1L8jKJ8qBDDBqpxN.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/u6AMJ3q7OSXJ5asGPtsAIJZY1Bb.jpg",
+    "sameName": "Jimmy Fallon",
+    "oddName": "Jimmy Kimmel"
+  },
+  {
+    "pairId": 38,
+    "description": "Sci-fi icons",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/mh1z9Ay5u9ScIwJfmP6TitdZ6N8.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/cmclOgRkkepSNBhJGVKlWq2Bgjr.jpg",
+    "sameName": "Harrison Ford",
+    "oddName": "Mark Hamill"
+  },
+  {
+    "pairId": 39,
+    "description": "Gen Z icons",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/k3W1XXddDOH2zibPkNotIh5amHo.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/8YI1IMMX1vRPfHwLAixPadlKJJj.jpg",
+    "sameName": "Charli D'Amelio",
+    "oddName": "Addison Rae"
+  },
+  {
+    "pairId": 40,
+    "description": "Formula 1 champions",
+    "sameImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/2ts1JkL9pM7Qoh3jRu8Pr93Xqko.jpg",
+    "oddImage": "https://www.themoviedb.org/t/p/w300_and_h450_bestv2/vg1HvgCL8fJyV9l0CgEA4fzMcoK.jpg",
+    "sameName": "Lewis Hamilton",
+    "oddName": "Max Verstappen"
   }
 ];
 
