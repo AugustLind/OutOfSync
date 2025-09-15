@@ -28,6 +28,32 @@ dependencies:
   device_info_plus: ^10.1.0
   # Connectivity checking
   connectivity_plus: ^6.0.1
+  # Advanced animations
+  flutter_animate: ^4.5.0
+  # Confetti effects
+  confetti: ^0.7.0
+  # Advanced charts
+  fl_chart: ^0.68.0
+  # Shimmer loading effects
+  shimmer: ^3.0.0
+  # Tutorial/Onboarding
+  introduction_screen: ^3.1.12
+  # Cached network images
+  cached_network_image: ^3.3.1
+  # Image filters
+  photofilters: ^3.0.3
+  # Vibration patterns
+  vibration: ^1.8.4
+  # Package info
+  package_info_plus: ^8.0.0
+  # URL launcher
+  url_launcher: ^6.2.5
+  # Share functionality
+  share_plus: ^9.0.0
+  # File picker
+  file_picker: ^8.0.0+1
+  # Permission handler
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:

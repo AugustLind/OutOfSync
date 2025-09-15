@@ -15,6 +15,19 @@ import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:confetti/confetti.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:introduction_screen/introduction_screen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:vibration/vibration.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'profile_edit_page.dart';
 
 class AppTheme {
   static bool _isDarkMode = false;
@@ -108,6 +121,208 @@ class SoundManager {
   static void dispose() {
     _audioPlayer.dispose();
   }
+}
+
+class VibrationManager {
+  static bool _vibrationEnabled = true;
+
+  static bool get vibrationEnabled => _vibrationEnabled;
+  static void setVibrationEnabled(bool value) => _vibrationEnabled = value;
+
+  static Future<void> light() async {
+    if (!_vibrationEnabled) return;
+    try {
+      if (await Vibration.hasVibrator() ?? false) {
+        Vibration.vibrate(duration: 50);
+      }
+    } catch (e) {
+      HapticFeedback.lightImpact();
+    }
+  }
+
+  static Future<void> medium() async {
+    if (!_vibrationEnabled) return;
+    try {
+      if (await Vibration.hasVibrator() ?? false) {
+        Vibration.vibrate(duration: 100);
+      }
+    } catch (e) {
+      HapticFeedback.mediumImpact();
+    }
+  }
+
+  static Future<void> heavy() async {
+    if (!_vibrationEnabled) return;
+    try {
+      if (await Vibration.hasVibrator() ?? false) {
+        Vibration.vibrate(duration: 200);
+      }
+    } catch (e) {
+      HapticFeedback.heavyImpact();
+    }
+  }
+
+  static Future<void> success() async {
+    if (!_vibrationEnabled) return;
+    try {
+      if (await Vibration.hasVibrator() ?? false) {
+        Vibration.vibrate(pattern: [0, 100, 50, 100]);
+      }
+    } catch (e) {
+      HapticFeedback.mediumImpact();
+    }
+  }
+
+  static Future<void> error() async {
+    if (!_vibrationEnabled) return;
+    try {
+      if (await Vibration.hasVibrator() ?? false) {
+        Vibration.vibrate(pattern: [0, 200, 100, 200, 100, 200]);
+      }
+    } catch (e) {
+      HapticFeedback.heavyImpact();
+    }
+  }
+}
+
+class UserPreferences {
+  static const String _themeKey = 'dark_mode';
+  static const String _soundKey = 'sound_enabled';
+  static const String _vibrationKey = 'vibration_enabled';
+  static const String _firstLaunchKey = 'first_launch';
+  static const String _playerNameKey = 'player_name';
+  static const String _playerColorKey = 'player_color';
+  static const String _playerAvatarKey = 'player_avatar';
+  static const String _difficultyKey = 'difficulty_level';
+  static const String _roundsKey = 'default_rounds';
+
+  static Future<void> saveDarkMode(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_themeKey, value);
+  }
+
+  static Future<bool> getDarkMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_themeKey) ?? false;
+  }
+
+  static Future<void> saveSoundEnabled(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_soundKey, value);
+  }
+
+  static Future<bool> getSoundEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_soundKey) ?? true;
+  }
+
+  static Future<void> saveVibrationEnabled(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_vibrationKey, value);
+  }
+
+  static Future<bool> getVibrationEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_vibrationKey) ?? true;
+  }
+
+  static Future<void> saveFirstLaunch(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_firstLaunchKey, value);
+  }
+
+  static Future<bool> isFirstLaunch() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_firstLaunchKey) ?? true;
+  }
+
+  static Future<void> savePlayerProfile(PlayerProfile profile) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_playerNameKey, profile.name);
+    await prefs.setString(_playerColorKey, profile.color.name);
+    if (profile.avatarEmoji != null) {
+      await prefs.setString(_playerAvatarKey, profile.avatarEmoji!);
+    }
+  }
+
+  static Future<PlayerProfile?> getPlayerProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final name = prefs.getString(_playerNameKey);
+    if (name == null) return null;
+
+    final colorName = prefs.getString(_playerColorKey) ?? PlayerColor.blue.name;
+    final color = PlayerColor.values.firstWhere(
+      (c) => c.name == colorName,
+      orElse: () => PlayerColor.blue,
+    );
+    final avatar = prefs.getString(_playerAvatarKey);
+
+    return PlayerProfile(name: name, color: color, avatarEmoji: avatar);
+  }
+}
+
+class GameDifficulty {
+  static const easy = 'easy';
+  static const medium = 'medium';
+  static const hard = 'hard';
+  static const expert = 'expert';
+
+  static const Map<String, String> displayNames = {
+    easy: 'Lett - Åpenbare forskjeller',
+    medium: 'Middels - Noen likheter',
+    hard: 'Vanskelig - Subtile forskjeller',
+    expert: 'Ekspert - Nesten identiske',
+  };
+
+  static List<String> get all => [easy, medium, hard, expert];
+}
+
+class GameAnalytics {
+  static const String _analyticsKey = 'game_analytics';
+  static Map<String, dynamic> _analytics = {};
+
+  static Future<void> loadAnalytics() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final analyticsJson = prefs.getString(_analyticsKey);
+      if (analyticsJson != null) {
+        _analytics = jsonDecode(analyticsJson);
+      }
+    } catch (e) {
+      print('Error loading analytics: $e');
+    }
+  }
+
+  static Future<void> saveAnalytics() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_analyticsKey, jsonEncode(_analytics));
+    } catch (e) {
+      print('Error saving analytics: $e');
+    }
+  }
+
+  static void recordGameStart() {
+    _analytics['total_games'] = (_analytics['total_games'] ?? 0) + 1;
+    _analytics['last_played'] = DateTime.now().toIso8601String();
+    saveAnalytics();
+  }
+
+  static void recordGameComplete(Duration gameDuration, int playerCount) {
+    _analytics['total_completed_games'] = (_analytics['total_completed_games'] ?? 0) + 1;
+    _analytics['total_play_time'] = (_analytics['total_play_time'] ?? 0) + gameDuration.inSeconds;
+    _analytics['average_players'] = ((_analytics['average_players'] ?? 0) + playerCount) / 2;
+    saveAnalytics();
+  }
+
+  static void recordPlayerAction(String action) {
+    final actions = _analytics['player_actions'] as Map<String, dynamic>? ?? {};
+    actions[action] = (actions[action] ?? 0) + 1;
+    _analytics['player_actions'] = actions;
+    saveAnalytics();
+  }
+
+  static Map<String, dynamic> getAnalytics() => Map.from(_analytics);
 }
 
 class PlayerScore {
@@ -316,11 +531,11 @@ class _IOSButtonState extends State<IOSButton> with SingleTickerProviderStateMix
     }
     if (widget.enableHaptic) {
       if (widget.isDestructive) {
-        HapticFeedback.heavyImpact();
+        VibrationManager.heavy();
       } else if (widget.isPrimary) {
-        HapticFeedback.mediumImpact();
+        VibrationManager.medium();
       } else {
-        HapticFeedback.lightImpact();
+        VibrationManager.light();
       }
     }
 
@@ -542,6 +757,236 @@ class RoundManager {
 
   static bool isMatchComplete() {
     return _currentRound > _maxRounds;
+  }
+}
+
+class CelebrationManager {
+  static late ConfettiController _confettiController;
+  static bool _initialized = false;
+
+  static void initialize(TickerProvider tickerProvider) {
+    if (!_initialized) {
+      _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+      _initialized = true;
+    }
+  }
+
+  static void celebrateWin() {
+    if (_initialized) {
+      _confettiController.play();
+      SoundManager.playWin();
+      VibrationManager.success();
+    }
+  }
+
+  static void celebrateLoss() {
+    SoundManager.playLose();
+    VibrationManager.error();
+  }
+
+  static Widget buildConfettiWidget() {
+    if (!_initialized) return const SizedBox.shrink();
+
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConfettiWidget(
+        confettiController: _confettiController,
+        blastDirection: pi / 2,
+        maxBlastForce: 20,
+        minBlastForce: 10,
+        emissionFrequency: 0.05,
+        numberOfParticles: 50,
+        gravity: 0.3,
+        shouldLoop: false,
+        colors: const [
+          Colors.green,
+          Colors.blue,
+          Colors.pink,
+          Colors.orange,
+          Colors.purple,
+        ],
+      ),
+    );
+  }
+
+  static void dispose() {
+    if (_initialized) {
+      _confettiController.dispose();
+      _initialized = false;
+    }
+  }
+}
+
+class LoadingWidget extends StatelessWidget {
+  final String? text;
+  final Color? color;
+
+  const LoadingWidget({super.key, this.text, this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: (color ?? AppTheme.primaryColor).withOpacity(0.3),
+      highlightColor: (color ?? AppTheme.primaryColor).withOpacity(0.7),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(30),
+            ),
+          ),
+          if (text != null) ...[
+            const SizedBox(height: 16),
+            Container(
+              width: 120,
+              height: 16,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class AnimatedCard extends StatefulWidget {
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry? margin;
+  final Duration? animationDuration;
+  final bool slideUp;
+
+  const AnimatedCard({
+    super.key,
+    required this.child,
+    this.padding,
+    this.margin,
+    this.animationDuration,
+    this.slideUp = true,
+  });
+
+  @override
+  State<AnimatedCard> createState() => _AnimatedCardState();
+}
+
+class _AnimatedCardState extends State<AnimatedCard> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.animationDuration ?? const Duration(milliseconds: 600),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    ));
+
+    _slideAnimation = Tween<Offset>(
+      begin: widget.slideUp ? const Offset(0, 0.5) : const Offset(0, -0.5),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    ));
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SlideTransition(
+      position: _slideAnimation,
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: IOSCard(
+          padding: widget.padding,
+          margin: widget.margin,
+          child: widget.child,
+        ),
+      ),
+    );
+  }
+}
+
+class TutorialManager {
+  static bool _showTutorial = true;
+
+  static bool get shouldShowTutorial => _showTutorial;
+
+  static void setTutorialShown() {
+    _showTutorial = false;
+    UserPreferences.saveFirstLaunch(false);
+  }
+
+  static List<PageViewModel> getTutorialPages() {
+    return [
+      PageViewModel(
+        title: "Velkommen til Out of Sync!",
+        body: "Et sosialt spill der målet er å finne ut hvem som skiller seg ut fra resten av gruppen.",
+        image: const Center(
+          child: Icon(
+            Icons.people_rounded,
+            size: 120,
+            color: Colors.blue,
+          ),
+        ),
+      ),
+      PageViewModel(
+        title: "Hvordan spille",
+        body: "Alle spillere får tildelt et navn. De fleste får det samme navnet, men én person får et annet navn.",
+        image: const Center(
+          child: Icon(
+            Icons.person_search,
+            size: 120,
+            color: Colors.orange,
+          ),
+        ),
+      ),
+      PageViewModel(
+        title: "Stem og vinn",
+        body: "Når tiden er ute, stem på hvem du tror har det 'rare' navnet. Personen med flest stemmer vinner!",
+        image: const Center(
+          child: Icon(
+            Icons.how_to_vote,
+            size: 120,
+            color: Colors.green,
+          ),
+        ),
+      ),
+      PageViewModel(
+        title: "Klar til å spille?",
+        body: "Lag et spill eller bli med i et eksisterende spill på samme WiFi-nettverk.",
+        image: const Center(
+          child: Icon(
+            Icons.wifi,
+            size: 120,
+            color: Colors.purple,
+          ),
+        ),
+      ),
+    ];
   }
 }
 
@@ -2010,16 +2455,18 @@ List<GameInfo> availableGames = [];
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize systems
+  // Initialize all systems
   await ScoreManager.loadScores();
+  await GameAnalytics.loadAnalytics();
 
   // Load saved preferences
-  final prefs = await SharedPreferences.getInstance();
-  final isDarkMode = prefs.getBool('dark_mode') ?? false;
-  final soundEnabled = prefs.getBool('sound_enabled') ?? true;
+  final isDarkMode = await UserPreferences.getDarkMode();
+  final soundEnabled = await UserPreferences.getSoundEnabled();
+  final vibrationEnabled = await UserPreferences.getVibrationEnabled();
 
   AppTheme.setDarkMode(isDarkMode);
   SoundManager.setSoundEnabled(soundEnabled);
+  VibrationManager.setVibrationEnabled(vibrationEnabled);
 
   runApp(const MainApp());
 }
@@ -2031,10 +2478,16 @@ class MainApp extends StatefulWidget {
   State<MainApp> createState() => _MainAppState();
 }
 
-class _MainAppState extends State<MainApp> {
+class _MainAppState extends State<MainApp> with TickerProviderStateMixin {
+  bool _showTutorial = false;
+
   @override
   void initState() {
     super.initState();
+
+    // Initialize celebration system
+    CelebrationManager.initialize(this);
+
     // Set preferred orientations (portrait and landscape)
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -2042,6 +2495,18 @@ class _MainAppState extends State<MainApp> {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+
+    // Check if we should show tutorial
+    _checkFirstLaunch();
+  }
+
+  Future<void> _checkFirstLaunch() async {
+    final isFirstLaunch = await UserPreferences.isFirstLaunch();
+    if (isFirstLaunch && mounted) {
+      setState(() {
+        _showTutorial = true;
+      });
+    }
   }
 
   @override
@@ -2073,14 +2538,50 @@ class _MainAppState extends State<MainApp> {
         brightness: Brightness.dark,
       ),
       themeMode: AppTheme.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      home: const HomePage(),
+      home: _showTutorial ? TutorialScreen() : const HomePage(),
     );
   }
 
   @override
   void dispose() {
     SoundManager.dispose();
+    CelebrationManager.dispose();
     super.dispose();
+  }
+}
+
+class TutorialScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return IntroductionScreen(
+      pages: TutorialManager.getTutorialPages(),
+      onDone: () {
+        TutorialManager.setTutorialShown();
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomePage()),
+        );
+      },
+      onSkip: () {
+        TutorialManager.setTutorialShown();
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomePage()),
+        );
+      },
+      showSkipButton: true,
+      showNextButton: true,
+      showDoneButton: true,
+      skip: Text('Hopp over', style: AppTheme.bodyTextStyle),
+      next: Icon(Icons.arrow_forward, color: AppTheme.primaryColor),
+      done: Text('Ferdig', style: AppTheme.bodyTextStyle.copyWith(fontWeight: FontWeight.w600)),
+      dotsDecorator: DotsDecorator(
+        size: const Size.square(10.0),
+        activeSize: const Size(20.0, 10.0),
+        activeColor: AppTheme.primaryColor,
+        color: AppTheme.textSecondary,
+        spacing: const EdgeInsets.symmetric(horizontal: 3.0),
+        activeShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25.0)),
+      ),
+    );
   }
 }
 
@@ -2869,9 +3370,56 @@ class _SettingsPageState extends State<SettingsPage> {
                         setState(() {
                           SoundManager.setSoundEnabled(value);
                         });
-                        final prefs = await SharedPreferences.getInstance();
-                        await prefs.setBool('sound_enabled', value);
+                        await UserPreferences.saveSoundEnabled(value);
                       },
+                    ),
+                    const Divider(),
+                    _buildSettingToggle(
+                      'Vibrasjoner',
+                      'Haptic feedback for handlinger',
+                      VibrationManager.vibrationEnabled,
+                      (value) async {
+                        setState(() {
+                          VibrationManager.setVibrationEnabled(value);
+                        });
+                        await UserPreferences.saveVibrationEnabled(value);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              IOSCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Spillere profil',
+                      style: AppTheme.headlineTextStyle,
+                    ),
+                    const SizedBox(height: 16),
+                    IOSButton(
+                      text: 'Rediger profil',
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          CupertinoPageRoute(
+                            builder: (_) => const ProfileEditPage(),
+                          ),
+                        );
+                      },
+                      isLarge: true,
+                    ),
+                    const SizedBox(height: 12),
+                    IOSButton(
+                      text: 'Vis tutorial igjen',
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          CupertinoPageRoute(
+                            builder: (_) => TutorialScreen(),
+                          ),
+                        );
+                      },
+                      isLarge: true,
                     ),
                   ],
                 ),
@@ -2887,7 +3435,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Out of Sync v2.0\nEt sosialt spill der målet er å finne ut hvem som skiller seg ut.',
+                      'Out of Sync v3.0 Pro\nEt avansert sosialt spill med AI, animasjoner, statistikk og mye mer!',
                       style: AppTheme.bodyTextStyle,
                     ),
                     const SizedBox(height: 16),
