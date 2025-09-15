@@ -8,54 +8,264 @@ import 'package:flutter/services.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:udp/udp.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:uuid/uuid.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class AppTheme {
-  static const primaryColor = Color(0xFF007AFF);
-  static const secondaryColor = Color(0xFF5856D6);
-  static const backgroundColor = Color(0xFFF2F2F7);
-  static const cardColor = Color(0xFFFFFFFF);
-  static const textPrimary = Color(0xFF000000);
-  static const textSecondary = Color(0xFF8E8E93);
+  static bool _isDarkMode = false;
+
+  static bool get isDarkMode => _isDarkMode;
+  static void setDarkMode(bool value) => _isDarkMode = value;
+
+  // Light theme colors
+  static const _lightPrimaryColor = Color(0xFF007AFF);
+  static const _lightSecondaryColor = Color(0xFF5856D6);
+  static const _lightBackgroundColor = Color(0xFFF2F2F7);
+  static const _lightCardColor = Color(0xFFFFFFFF);
+  static const _lightTextPrimary = Color(0xFF000000);
+  static const _lightTextSecondary = Color(0xFF8E8E93);
+
+  // Dark theme colors
+  static const _darkPrimaryColor = Color(0xFF0A84FF);
+  static const _darkSecondaryColor = Color(0xFF5E5CE6);
+  static const _darkBackgroundColor = Color(0xFF000000);
+  static const _darkCardColor = Color(0xFF1C1C1E);
+  static const _darkTextPrimary = Color(0xFFFFFFFF);
+  static const _darkTextSecondary = Color(0xFF8E8E93);
+
+  // Common colors
   static const destructiveColor = Color(0xFFFF3B30);
   static const successColor = Color(0xFF34C759);
   static const warningColor = Color(0xFFFF9500);
-  
+
+  // Dynamic colors based on theme
+  static Color get primaryColor => _isDarkMode ? _darkPrimaryColor : _lightPrimaryColor;
+  static Color get secondaryColor => _isDarkMode ? _darkSecondaryColor : _lightSecondaryColor;
+  static Color get backgroundColor => _isDarkMode ? _darkBackgroundColor : _lightBackgroundColor;
+  static Color get cardColor => _isDarkMode ? _darkCardColor : _lightCardColor;
+  static Color get textPrimary => _isDarkMode ? _darkTextPrimary : _lightTextPrimary;
+  static Color get textSecondary => _isDarkMode ? _darkTextSecondary : _lightTextSecondary;
+
   static const borderRadius = 12.0;
   static const cardElevation = 0.0;
   static const spacing = 16.0;
-  
-  static const titleTextStyle = TextStyle(
+
+  static TextStyle get titleTextStyle => TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.bold,
     color: textPrimary,
   );
-  
-  static const headlineTextStyle = TextStyle(
+
+  static TextStyle get headlineTextStyle => TextStyle(
     fontSize: 22,
     fontWeight: FontWeight.w600,
     color: textPrimary,
   );
-  
-  static const bodyTextStyle = TextStyle(
+
+  static TextStyle get bodyTextStyle => TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.normal,
     color: textPrimary,
   );
-  
-  static const captionTextStyle = TextStyle(
+
+  static TextStyle get captionTextStyle => TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.normal,
     color: textSecondary,
   );
 }
 
-class IOSButton extends StatelessWidget {
+class SoundManager {
+  static final AudioPlayer _audioPlayer = AudioPlayer();
+  static bool _soundEnabled = true;
+
+  static bool get soundEnabled => _soundEnabled;
+  static void setSoundEnabled(bool value) => _soundEnabled = value;
+
+  static Future<void> playSound(String soundName) async {
+    if (!_soundEnabled) return;
+
+    try {
+      await _audioPlayer.play(AssetSource('sounds/$soundName.mp3'));
+    } catch (e) {
+      print('Error playing sound: $e');
+    }
+  }
+
+  static Future<void> playButtonTap() => playSound('button_tap');
+  static Future<void> playGameStart() => playSound('game_start');
+  static Future<void> playVoteSubmit() => playSound('vote_submit');
+  static Future<void> playWin() => playSound('win');
+  static Future<void> playLose() => playSound('lose');
+  static Future<void> playPlayerJoin() => playSound('player_join');
+  static Future<void> playCountdown() => playSound('countdown');
+
+  static void dispose() {
+    _audioPlayer.dispose();
+  }
+}
+
+class PlayerScore {
+  final String playerName;
+  int wins;
+  int losses;
+  int gamesPlayed;
+  List<String> achievements;
+
+  PlayerScore({
+    required this.playerName,
+    this.wins = 0,
+    this.losses = 0,
+    this.gamesPlayed = 0,
+    List<String>? achievements,
+  }) : achievements = achievements ?? [];
+
+  double get winRate => gamesPlayed > 0 ? wins / gamesPlayed : 0.0;
+
+  Map<String, dynamic> toJson() => {
+    'playerName': playerName,
+    'wins': wins,
+    'losses': losses,
+    'gamesPlayed': gamesPlayed,
+    'achievements': achievements,
+  };
+
+  factory PlayerScore.fromJson(Map<String, dynamic> json) => PlayerScore(
+    playerName: json['playerName'],
+    wins: json['wins'] ?? 0,
+    losses: json['losses'] ?? 0,
+    gamesPlayed: json['gamesPlayed'] ?? 0,
+    achievements: List<String>.from(json['achievements'] ?? []),
+  );
+}
+
+class ScoreManager {
+  static const String _scoresKey = 'player_scores';
+  static Map<String, PlayerScore> _scores = {};
+
+  static Map<String, PlayerScore> get scores => _scores;
+
+  static Future<void> loadScores() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final scoresJson = prefs.getString(_scoresKey);
+      if (scoresJson != null) {
+        final Map<String, dynamic> decoded = jsonDecode(scoresJson);
+        _scores = decoded.map((key, value) =>
+          MapEntry(key, PlayerScore.fromJson(value)));
+      }
+    } catch (e) {
+      print('Error loading scores: $e');
+    }
+  }
+
+  static Future<void> saveScores() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final scoresJson = jsonEncode(_scores.map((key, value) =>
+        MapEntry(key, value.toJson())));
+      await prefs.setString(_scoresKey, scoresJson);
+    } catch (e) {
+      print('Error saving scores: $e');
+    }
+  }
+
+  static Future<void> recordWin(String playerName) async {
+    _scores[playerName] ??= PlayerScore(playerName: playerName);
+    _scores[playerName]!.wins++;
+    _scores[playerName]!.gamesPlayed++;
+    await _checkAchievements(playerName);
+    await saveScores();
+  }
+
+  static Future<void> recordLoss(String playerName) async {
+    _scores[playerName] ??= PlayerScore(playerName: playerName);
+    _scores[playerName]!.losses++;
+    _scores[playerName]!.gamesPlayed++;
+    await saveScores();
+  }
+
+  static Future<void> _checkAchievements(String playerName) async {
+    final score = _scores[playerName]!;
+    final achievements = <String>[];
+
+    if (score.wins >= 1 && !score.achievements.contains('First Win')) {
+      achievements.add('First Win');
+    }
+    if (score.wins >= 5 && !score.achievements.contains('Five Wins')) {
+      achievements.add('Five Wins');
+    }
+    if (score.wins >= 10 && !score.achievements.contains('Ten Wins')) {
+      achievements.add('Ten Wins');
+    }
+    if (score.winRate >= 0.8 && score.gamesPlayed >= 5 && !score.achievements.contains('Master Player')) {
+      achievements.add('Master Player');
+    }
+
+    score.achievements.addAll(achievements);
+  }
+
+  static PlayerScore getPlayerScore(String playerName) {
+    return _scores[playerName] ?? PlayerScore(playerName: playerName);
+  }
+}
+
+enum PlayerColor {
+  blue(Color(0xFF007AFF), 'Blå'),
+  purple(Color(0xFF5856D6), 'Lilla'),
+  green(Color(0xFF34C759), 'Grønn'),
+  orange(Color(0xFFFF9500), 'Oransje'),
+  red(Color(0xFFFF3B30), 'Rød'),
+  pink(Color(0xFFFF2D92), 'Rosa'),
+  yellow(Color(0xFFFFD60A), 'Gul'),
+  teal(Color(0xFF40E0D0), 'Turkis');
+
+  const PlayerColor(this.color, this.displayName);
+  final Color color;
+  final String displayName;
+}
+
+class PlayerProfile {
+  final String name;
+  final PlayerColor color;
+  final String? avatarEmoji;
+
+  PlayerProfile({
+    required this.name,
+    this.color = PlayerColor.blue,
+    this.avatarEmoji,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'color': color.name,
+    'avatarEmoji': avatarEmoji,
+  };
+
+  factory PlayerProfile.fromJson(Map<String, dynamic> json) => PlayerProfile(
+    name: json['name'],
+    color: PlayerColor.values.firstWhere(
+      (c) => c.name == json['color'],
+      orElse: () => PlayerColor.blue,
+    ),
+    avatarEmoji: json['avatarEmoji'],
+  );
+}
+
+class IOSButton extends StatefulWidget {
   final String text;
   final VoidCallback? onPressed;
   final bool isPrimary;
   final bool isDestructive;
   final bool isLarge;
-  
+  final bool enableSound;
+  final bool enableHaptic;
+
   const IOSButton({
     super.key,
     required this.text,
@@ -63,59 +273,275 @@ class IOSButton extends StatelessWidget {
     this.isPrimary = false,
     this.isDestructive = false,
     this.isLarge = false,
+    this.enableSound = true,
+    this.enableHaptic = true,
   });
-  
+
+  @override
+  State<IOSButton> createState() => _IOSButtonState();
+}
+
+class _IOSButtonState extends State<IOSButton> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _handleTap() async {
+    if (widget.onPressed == null) return;
+
+    // Play sound and haptic feedback
+    if (widget.enableSound) {
+      SoundManager.playButtonTap();
+    }
+    if (widget.enableHaptic) {
+      if (widget.isDestructive) {
+        HapticFeedback.heavyImpact();
+      } else if (widget.isPrimary) {
+        HapticFeedback.mediumImpact();
+      } else {
+        HapticFeedback.lightImpact();
+      }
+    }
+
+    // Animate button press
+    await _animationController.forward();
+    await _animationController.reverse();
+
+    widget.onPressed!();
+  }
+
   @override
   Widget build(BuildContext context) {
     Color backgroundColor;
     Color textColor;
-    
-    if (isDestructive) {
+
+    if (widget.isDestructive) {
       backgroundColor = AppTheme.destructiveColor;
       textColor = Colors.white;
-    } else if (isPrimary) {
+    } else if (widget.isPrimary) {
       backgroundColor = AppTheme.primaryColor;
       textColor = Colors.white;
     } else {
       backgroundColor = AppTheme.cardColor;
       textColor = AppTheme.primaryColor;
     }
-    
-    return Container(
-      width: isLarge ? double.infinity : null,
-      height: isLarge ? 56 : 44,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-        border: !isPrimary && !isDestructive 
-            ? Border.all(color: AppTheme.primaryColor, width: 1)
-            : null,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-          child: Center(
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                color: textColor,
+
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Container(
+            width: widget.isLarge ? double.infinity : null,
+            height: widget.isLarge ? 56 : 44,
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+              border: !widget.isPrimary && !widget.isDestructive
+                  ? Border.all(color: AppTheme.primaryColor, width: 1)
+                  : null,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: _handleTap,
+                borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                child: Center(
+                  child: Text(
+                    widget.text,
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
+  }
+}
+
+class CountdownTimer extends StatefulWidget {
+  final int seconds;
+  final VoidCallback? onComplete;
+  final bool showNumbers;
+
+  const CountdownTimer({
+    super.key,
+    required this.seconds,
+    this.onComplete,
+    this.showNumbers = true,
+  });
+
+  @override
+  State<CountdownTimer> createState() => _CountdownTimerState();
+}
+
+class _CountdownTimerState extends State<CountdownTimer> with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+  Timer? _timer;
+  int _remaining = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _remaining = widget.seconds;
+    _controller = AnimationController(
+      duration: Duration(seconds: widget.seconds),
+      vsync: this,
+    );
+    _animation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(_controller);
+
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _controller.forward();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _remaining--;
+      });
+
+      if (_remaining <= 3 && _remaining > 0) {
+        SoundManager.playCountdown();
+        HapticFeedback.mediumImpact();
+      }
+
+      if (_remaining <= 0) {
+        timer.cancel();
+        widget.onComplete?.call();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (widget.showNumbers)
+          Text(
+            '$_remaining',
+            style: TextStyle(
+              fontSize: 48,
+              fontWeight: FontWeight.bold,
+              color: _remaining <= 3 ? AppTheme.destructiveColor : AppTheme.primaryColor,
+            ),
+          ),
+        const SizedBox(height: 16),
+        Container(
+          width: double.infinity,
+          height: 8,
+          decoration: BoxDecoration(
+            color: AppTheme.cardColor,
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: AppTheme.textSecondary.withOpacity(0.3)),
+          ),
+          child: AnimatedBuilder(
+            animation: _animation,
+            builder: (context, child) {
+              return FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: _animation.value,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: _remaining <= 3 ? AppTheme.destructiveColor : AppTheme.primaryColor,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class RoundManager {
+  static int _currentRound = 1;
+  static int _maxRounds = 3;
+  static Map<String, int> _roundWins = {};
+
+  static int get currentRound => _currentRound;
+  static int get maxRounds => _maxRounds;
+  static Map<String, int> get roundWins => _roundWins;
+
+  static void setMaxRounds(int rounds) {
+    _maxRounds = rounds;
+  }
+
+  static void startNewMatch() {
+    _currentRound = 1;
+    _roundWins.clear();
+  }
+
+  static void recordRoundWin(String playerName) {
+    _roundWins[playerName] = (_roundWins[playerName] ?? 0) + 1;
+  }
+
+  static bool nextRound() {
+    _currentRound++;
+    return _currentRound <= _maxRounds;
+  }
+
+  static String? getMatchWinner() {
+    if (_currentRound > _maxRounds) {
+      final sortedWins = _roundWins.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+
+      if (sortedWins.isNotEmpty) {
+        return sortedWins.first.key;
+      }
+    }
+    return null;
+  }
+
+  static bool isMatchComplete() {
+    return _currentRound > _maxRounds;
   }
 }
 
@@ -123,14 +549,14 @@ class IOSCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final EdgeInsetsGeometry? margin;
-  
+
   const IOSCard({
     super.key,
     required this.child,
     this.padding,
     this.margin,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -157,7 +583,7 @@ class IOSTextField extends StatelessWidget {
   final TextEditingController? controller;
   final Function(String)? onChanged;
   final bool autofocus;
-  
+
   const IOSTextField({
     super.key,
     required this.label,
@@ -165,7 +591,7 @@ class IOSTextField extends StatelessWidget {
     this.onChanged,
     this.autofocus = false,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -210,7 +636,7 @@ class CelebrityPair {
   final String oddImage;
   final String sameName;
   final String oddName;
-  
+
   CelebrityPair({
     required this.pairId,
     required this.description,
@@ -219,13 +645,13 @@ class CelebrityPair {
     required this.sameName,
     required this.oddName,
   });
-  
+
   factory CelebrityPair.fromJson(Map<String, dynamic> json) {
     return CelebrityPair(
       pairId: json['pair_id'],
       description: json['description'],
-      sameImage: json['same_image'],
-      oddImage: json['odd_image'],
+      sameImage: json['same_image'] ?? '',
+      oddImage: json['odd_image'] ?? '',
       sameName: json['same_name'],
       oddName: json['odd_name'],
     );
@@ -244,123 +670,83 @@ class ImageManager {
   static final List<CelebrityPair> _celebrityPairs = [
     CelebrityPair(
       pairId: 1,
-      description: 'Norske TV-profiler - lignende ansiktstrekk',
-      sameImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Fredrik_Solvang_2019.jpg/300px-Fredrik_Solvang_2019.jpg',
-      oddImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Daniel_Choi_2020.jpg/300px-Daniel_Choi_2020.jpg',
-      sameName: 'Fredrik Solvang',
-      oddName: 'Daniel Choi',
-    ),
-    CelebrityPair(
-      pairId: 2,
-      description: 'Hollywood skuespillere - lignende profil',
-      sameImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Matt_Damon_2019.jpg/300px-Matt_Damon_2019.jpg',
-      oddImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Mark_Wahlberg_2018.jpg/300px-Mark_Wahlberg_2018.jpg',
+      description: 'Matt Damon vs Mark Wahlberg - often confused actors',
+      sameImage: '',
+      oddImage: '',
       sameName: 'Matt Damon',
       oddName: 'Mark Wahlberg',
     ),
     CelebrityPair(
+      pairId: 2,
+      description: 'Keira Knightley vs Natalie Portman - similar features',
+      sameImage: '',
+      oddImage: '',
+      sameName: 'Keira Knightley',
+      oddName: 'Natalie Portman',
+    ),
+    CelebrityPair(
       pairId: 3,
-      description: 'Blonde skuespillerinner - samme hårfarge',
-      sameImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Scarlett_Johansson_2019.jpg/300px-Scarlett_Johansson_2019.jpg',
-      oddImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Charlize_Theron_2019.jpg/300px-Charlize_Theron_2019.jpg',
-      sameName: 'Scarlett Johansson',
-      oddName: 'Charlize Theron',
+      description: 'Ryan Gosling vs Ryan Reynolds - the Ryan confusion',
+      sameImage: '',
+      oddImage: '',
+      sameName: 'Ryan Gosling',
+      oddName: 'Ryan Reynolds',
     ),
     CelebrityPair(
       pairId: 4,
-      description: 'Britiske skuespillere - same stil',
-      sameImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Benedict_Cumberbatch_2019.jpg/300px-Benedict_Cumberbatch_2019.jpg',
-      oddImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Tom_Hiddleston_2019.jpg/300px-Tom_Hiddleston_2019.jpg',
-      sameName: 'Benedict Cumberbatch',
-      oddName: 'Tom Hiddleston',
+      description: 'Zooey Deschanel vs Katy Perry - twin-like resemblance',
+      sameImage: '',
+      oddImage: '',
+      sameName: 'Zooey Deschanel',
+      oddName: 'Katy Perry',
     ),
     CelebrityPair(
       pairId: 5,
-      description: 'Amerikanske komikere - lignende utseende',
-      sameImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Will_Ferrell_2019.jpg/300px-Will_Ferrell_2019.jpg',
-      oddImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Steve_Carell_2019.jpg/300px-Steve_Carell_2019.jpg',
+      description: 'Will Ferrell vs Chad Smith - comedian vs drummer twins',
+      sameImage: '',
+      oddImage: '',
       sameName: 'Will Ferrell',
-      oddName: 'Steve Carell',
+      oddName: 'Chad Smith',
     ),
     CelebrityPair(
       pairId: 6,
-      description: 'Marvel-skuespillere - helteansikt',
-      sameImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Chris_Evans_2019.jpg/300px-Chris_Evans_2019.jpg',
-      oddImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Chris_Hemsworth_2019.jpg/300px-Chris_Hemsworth_2019.jpg',
-      sameName: 'Chris Evans',
-      oddName: 'Chris Hemsworth',
+      description: 'Emma Stone vs Lindsay Lohan - similar smile and eyes',
+      sameImage: '',
+      oddImage: '',
+      sameName: 'Emma Stone',
+      oddName: 'Lindsay Lohan',
     ),
     CelebrityPair(
       pairId: 7,
-      description: 'Actionstjerner - tøffe uttrykk',
-      sameImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Dwayne_Johnson_2019.jpg/300px-Dwayne_Johnson_2019.jpg',
-      oddImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Vin_Diesel_2019.jpg/300px-Vin_Diesel_2019.jpg',
-      sameName: 'Dwayne Johnson',
-      oddName: 'Vin Diesel',
+      description: 'Scarlett Johansson vs Amber Heard - blonde bombshells',
+      sameImage: '',
+      oddImage: '',
+      sameName: 'Scarlett Johansson',
+      oddName: 'Amber Heard',
     ),
     CelebrityPair(
       pairId: 8,
-      description: 'Pop-artister - unge stjerner',
-      sameImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Justin_Bieber_2019.jpg/300px-Justin_Bieber_2019.jpg',
-      oddImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Shawn_Mendes_2019.jpg/300px-Shawn_Mendes_2019.jpg',
-      sameName: 'Justin Bieber',
-      oddName: 'Shawn Mendes',
+      description: 'Elijah Wood vs Daniel Radcliffe - big eyes, similar build',
+      sameImage: '',
+      oddImage: '',
+      sameName: 'Elijah Wood',
+      oddName: 'Daniel Radcliffe',
     ),
     CelebrityPair(
       pairId: 9,
-      description: 'Kvinnelige sangere - kraftige stemmer',
-      sameImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Adele_2019.jpg/300px-Adele_2019.jpg',
-      oddImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Amy_Winehouse_2007.jpg/300px-Amy_Winehouse_2007.jpg',
-      sameName: 'Adele',
-      oddName: 'Amy Winehouse',
+      description: 'Jake Gyllenhaal vs Tobey Maguire - boyish features',
+      sameImage: '',
+      oddImage: '',
+      sameName: 'Jake Gyllenhaal',
+      oddName: 'Tobey Maguire',
     ),
     CelebrityPair(
       pairId: 10,
-      description: 'Norske artister - folkemusikk',
-      sameImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Ari_Behn_2015.jpg/300px-Ari_Behn_2015.jpg',
-      oddImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Lars_Winnerbäck_2018.jpg/300px-Lars_Winnerbäck_2018.jpg',
-      sameName: 'Ari Behn',
-      oddName: 'Lars Winnerbäck',
-    ),
-    CelebrityPair(
-      pairId: 11,
-      description: 'Fotballspillere - norske helter',
-      sameImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Martin_Ødegaard_2021.jpg/300px-Martin_Ødegaard_2021.jpg',
-      oddImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Erling_Haaland_2021.jpg/300px-Erling_Haaland_2021.jpg',
-      sameName: 'Martin Ødegaard',
-      oddName: 'Erling Haaland',
-    ),
-    CelebrityPair(
-      pairId: 12,
-      description: 'Norske skuespillere - kjente ansikter',
-      sameImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Aksel_Hennie_2019.jpg/300px-Aksel_Hennie_2019.jpg',
-      oddImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Nikolaj_Coster-Waldau_2019.jpg/300px-Nikolaj_Coster-Waldau_2019.jpg',
-      sameName: 'Aksel Hennie',
-      oddName: 'Nikolaj Coster-Waldau',
-    ),
-    CelebrityPair(
-      pairId: 13,
-      description: 'Kvinnelige komikere - morsomme damer',
-      sameImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Amy_Poehler_2019.jpg/300px-Amy_Poehler_2019.jpg',
-      oddImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Tina_Fey_2019.jpg/300px-Tina_Fey_2019.jpg',
-      sameName: 'Amy Poehler',
-      oddName: 'Tina Fey',
-    ),
-    CelebrityPair(
-      pairId: 14,
-      description: 'Regissører - filmskapere',
-      sameImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Steven_Spielberg_2018.jpg/300px-Steven_Spielberg_2018.jpg',
-      oddImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/George_Lucas_2019.jpg/300px-George_Lucas_2019.jpg',
-      sameName: 'Steven Spielberg',
-      oddName: 'George Lucas',
-    ),
-    CelebrityPair(
-      pairId: 15,
-      description: 'Tech-gründere - teknologiledere',
-      sameImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Mark_Zuckerberg_2019.jpg/300px-Mark_Zuckerberg_2019.jpg',
-      oddImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Elon_Musk_2015.jpg/300px-Elon_Musk_2015.jpg',
-      sameName: 'Mark Zuckerberg',
-      oddName: 'Elon Musk',
+      description: 'Benedict Cumberbatch vs Adam Driver - distinctive features',
+      sameImage: '',
+      oddImage: '',
+      sameName: 'Benedict Cumberbatch',
+      oddName: 'Adam Driver',
     ),
   ];
 
@@ -375,15 +761,10 @@ class ImageManager {
   static Future<List<String>> getAvailableImages() async {
     switch (_selectedCategory) {
       case ImageCategory.similarPeople:
-        // Return all images from similar pairs for random selection
-        final List<String> allImages = [];
-        for (final pair in _celebrityPairs) {
-          allImages.add(pair.sameImage);
-          allImages.add(pair.oddImage);
-        }
-        return allImages;
+        // Return empty list since we're focusing on names only
+        return [];
       case ImageCategory.custom:
-        return _customImages.isNotEmpty ? _customImages : defaultImages;
+        return _customImages.isNotEmpty ? _customImages : [];
       default:
         // For other categories, return default images
         return defaultImages;
@@ -404,10 +785,10 @@ class ImageManager {
     // Fallback to random selection
     final images = await getAvailableImages();
     return {
-      'same': getRandomImage(images),
-      'odd': getOddImage(images, getRandomImage(images)),
-      'same_name': 'Ukjent',
-      'odd_name': 'Ukjent',
+      'same': images.isNotEmpty ? getRandomImage(images) : '',
+      'odd': images.isNotEmpty ? getOddImage(images, getRandomImage(images)) : '',
+      'same_name': 'Person A',
+      'odd_name': 'Person B',
       'description': 'Random selection',
     };
   }
@@ -425,12 +806,12 @@ class ImageManager {
   }
 
   static String getRandomImage(List<String> images) {
-    if (images.isEmpty) return defaultImages.first;
+    if (images.isEmpty) return '';
     return images[Random().nextInt(images.length)];
   }
 
   static String getOddImage(List<String> images, String sameImage) {
-    if (images.length < 2) return defaultImages.last;
+    if (images.length < 2) return '';
     String oddImage;
     do {
       oddImage = images[Random().nextInt(images.length)];
@@ -447,6 +828,7 @@ class NetworkManager {
   UDP? _udp;
   ServerSocket? _serverSocket;
   Socket? _clientSocket;
+  Timer? _broadcastTimer;
   final Function(Map<String, dynamic>) onMessageReceived;
   final Function(String) onPlayerJoined;
   final Function(String) onPlayerLeft;
@@ -459,7 +841,15 @@ class NetworkManager {
   });
 
   Future<void> initialize() async {
-    _localIP = await NetworkInfo().getWifiIP();
+    try {
+      _localIP = await NetworkInfo().getWifiIP();
+      if (_localIP == null) {
+        throw Exception('Could not get WiFi IP address');
+      }
+    } catch (e) {
+      print('Network initialization error: $e');
+      throw Exception('Network setup failed. Make sure you are connected to WiFi.');
+    }
   }
 
   Future<void> startHosting(String gameCode) async {
@@ -469,7 +859,7 @@ class NetworkManager {
 
   Future<void> _startBroadcasting(String gameCode) async {
     _udp = await UDP.bind(Endpoint.broadcast(port: Port(broadcastPort)));
-    Timer.periodic(const Duration(seconds: 2), (timer) {
+    _broadcastTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (_udp != null) {
         final message = jsonEncode({
           'type': 'game_broadcast',
@@ -477,29 +867,43 @@ class NetworkManager {
           'host_ip': _localIP,
         });
         _udp!.send(message.codeUnits, Endpoint.broadcast(port: Port(broadcastPort)));
+      } else {
+        timer.cancel();
       }
     });
   }
 
+  final List<Socket> _connectedClients = [];
+
   Future<void> _startGameServer() async {
     _serverSocket = await ServerSocket.bind(_localIP!, gamePort);
     _serverSocket!.listen((socket) {
-      socket.listen((data) {
-        final message = String.fromCharCodes(data);
-        try {
-          final decoded = jsonDecode(message);
-          onMessageReceived(decoded);
-        } catch (e) {
-          print('Error decoding message: $e');
-        }
-      });
+      _connectedClients.add(socket);
+      socket.listen(
+        (data) {
+          final message = String.fromCharCodes(data);
+          try {
+            final decoded = jsonDecode(message);
+            onMessageReceived(decoded);
+          } catch (e) {
+            print('Error decoding message: $e');
+          }
+        },
+        onDone: () {
+          _connectedClients.remove(socket);
+        },
+        onError: (error) {
+          print('Client socket error: $error');
+          _connectedClients.remove(socket);
+        },
+      );
     });
   }
 
   Future<List<GameInfo>> discoverGames() async {
     final games = <GameInfo>[];
     final udp = await UDP.bind(Endpoint.loopback(port: Port(broadcastPort)));
-    
+
     final completer = Completer<List<GameInfo>>();
     Timer(const Duration(seconds: 3), () {
       udp.close();
@@ -547,16 +951,33 @@ class NetworkManager {
   void sendMessage(Map<String, dynamic> message) {
     final encoded = jsonEncode(message);
     if (_clientSocket != null) {
-      _clientSocket!.add(encoded.codeUnits);
+      try {
+        _clientSocket!.add(encoded.codeUnits);
+      } catch (e) {
+        print('Error sending message to server: $e');
+      }
     } else if (_serverSocket != null) {
-      // Broadcast to all connected clients (simplified)
+      // Broadcast to all connected clients
+      for (final client in _connectedClients.toList()) {
+        try {
+          client.add(encoded.codeUnits);
+        } catch (e) {
+          print('Error sending message to client: $e');
+          _connectedClients.remove(client);
+        }
+      }
     }
   }
 
   void dispose() {
+    _broadcastTimer?.cancel();
     _udp?.close();
     _serverSocket?.close();
     _clientSocket?.destroy();
+    for (final client in _connectedClients) {
+      client.destroy();
+    }
+    _connectedClients.clear();
   }
 }
 
@@ -565,6 +986,203 @@ class GameInfo {
   final String hostIP;
 
   GameInfo({required this.code, required this.hostIP});
+}
+
+class RulesPage extends StatelessWidget {
+  const RulesPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Spillregler'),
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Icon(
+            CupertinoIcons.back,
+            color: AppTheme.primaryColor,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppTheme.spacing),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              IOSCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [AppTheme.primaryColor, AppTheme.secondaryColor],
+                            ),
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          child: const Icon(
+                            Icons.psychology,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        const Expanded(
+                          child: Text(
+                            'Hvordan spille',
+                            style: AppTheme.titleTextStyle,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Mål:',
+                      style: AppTheme.headlineTextStyle,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Finn ut hvem som har fått et annet navn enn resten av gruppen.',
+                      style: AppTheme.bodyTextStyle,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              IOSCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Spillforløp:',
+                      style: AppTheme.headlineTextStyle,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildStep('1', 'Alle får tildelt et navn', 'De fleste får det samme navnet, men én person får et annet navn.'),
+                    _buildStep('2', 'Studer navnet ditt', 'Du har 10 sekunder til å se på navnet du har fått.'),
+                    _buildStep('3', 'Stem på hvem som skiller seg ut', 'Når alle er klare, stem på hvem du tror har det "rare" navnet.'),
+                    _buildStep('4', 'Se resultatet', 'Personen som får flest stemmer vinner!'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              IOSCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Tips:',
+                      style: AppTheme.headlineTextStyle,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTip('🎭', 'Hold pokerface', 'Ikke røp hvilket navn du har fått!'),
+                    _buildTip('👁️', 'Observer andre', 'Se etter ansiktsuttrykk og reaksjoner.'),
+                    _buildTip('🤔', 'Tenk logisk', 'Hvem oppfører seg annerledes?'),
+                    _buildTip('⏰', 'Vær rask', 'Du har begrenset tid til å bestemme deg.'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              IOSButton(
+                text: 'Forstått!',
+                onPressed: () => Navigator.of(context).pop(),
+                isPrimary: true,
+                isLarge: true,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStep(String number, String title, String description) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Center(
+              child: Text(
+                number,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTheme.bodyTextStyle.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: AppTheme.captionTextStyle,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTip(String emoji, String title, String description) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            emoji,
+            style: const TextStyle(fontSize: 24),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTheme.bodyTextStyle.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: AppTheme.captionTextStyle,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class Game extends ChangeNotifier {
@@ -596,17 +1214,35 @@ class Game extends ChangeNotifier {
     networkManager = NetworkManager(
       onMessageReceived: _handleNetworkMessage,
       onPlayerJoined: (player) {
-        players.add(player);
-        notifyListeners();
+        if (!players.contains(player)) {
+          players.add(player);
+          notifyListeners();
+        }
       },
       onPlayerLeft: (player) {
         players.remove(player);
+        // Reset game if too few players
+        if (players.length < 2 && started) {
+          _resetGame();
+        }
         notifyListeners();
       },
     );
     networkManager!.initialize().then((_) {
       networkManager!.startHosting(code);
+    }).catchError((error) {
+      print('Network initialization failed: $error');
+      // Could show error dialog to user here
     });
+  }
+
+  void _resetGame() {
+    started = false;
+    votingStarted = false;
+    readyPlayers.clear();
+    votes.clear();
+    voteResult = null;
+    oddPlayerIndex = null;
   }
 
   void _handleNetworkMessage(Map<String, dynamic> message) {
@@ -634,10 +1270,18 @@ class Game extends ChangeNotifier {
         notifyListeners();
         break;
       case 'player_ready':
-        readyToVote(message['player']);
+        readyPlayers.add(message['player']);
+        if (message['voting_started'] == true) {
+          votingStarted = true;
+        }
+        notifyListeners();
         break;
       case 'player_vote':
-        vote(message['voter'], message['votee']);
+        votes[message['voter']] = message['votee'];
+        if (message['vote_result'] != null) {
+          voteResult = message['vote_result'];
+        }
+        notifyListeners();
         break;
     }
   }
@@ -663,8 +1307,8 @@ class Game extends ChangeNotifier {
   Future<void> startGame() async {
     if (isHost) {
       oddPlayerIndex = Random().nextInt(players.length);
-      
-      // Generate images for this game session
+
+      // Generate names for this game session
       if (imageCategory == ImageCategory.similarPeople) {
         final celebrityPair = await ImageManager.getCelebrityPair();
         sameImage = celebrityPair['same']!;
@@ -673,10 +1317,12 @@ class Game extends ChangeNotifier {
         oddName = celebrityPair['odd_name']!;
       } else {
         final availableImages = await ImageManager.getAvailableImages();
-        sameImage = ImageManager.getRandomImage(availableImages);
-        oddImage = ImageManager.getOddImage(availableImages, sameImage!);
+        sameImage = availableImages.isNotEmpty ? ImageManager.getRandomImage(availableImages) : '';
+        oddImage = availableImages.isNotEmpty ? ImageManager.getOddImage(availableImages, sameImage!) : '';
+        sameName = 'Person A';
+        oddName = 'Person B';
       }
-      
+
       started = true;
       readyPlayers.clear();
       votes.clear();
@@ -696,18 +1342,20 @@ class Game extends ChangeNotifier {
   }
 
   void readyToVote(String player) {
-    readyPlayers.add(player);
-    if (readyPlayers.length == players.length) {
-      votingStarted = true;
+    if (!readyPlayers.contains(player)) {
+      readyPlayers.add(player);
+      if (readyPlayers.length == players.length) {
+        votingStarted = true;
+      }
+      if (isHost) {
+        broadcastMessage({
+          'type': 'player_ready',
+          'player': player,
+          'voting_started': votingStarted,
+        });
+      }
+      notifyListeners();
     }
-    if (isHost) {
-      broadcastMessage({
-        'type': 'player_ready',
-        'player': player,
-        'voting_started': votingStarted,
-      });
-    }
-    notifyListeners();
   }
 
   void vote(String voter, String votee) {
@@ -752,6 +1400,7 @@ class _GamePageState extends State<GamePage> {
   bool _showVoteButton = false;
   bool _readyPressed = false;
   bool _hasVoted = false;
+  bool _gameLoaded = false;
   late final bool _isOdd;
 
   @override
@@ -759,102 +1408,78 @@ class _GamePageState extends State<GamePage> {
     super.initState();
     _isOdd = widget.game.players.indexOf(widget.playerName) ==
         widget.game.oddPlayerIndex;
+
+    // Mark game as loaded after a short delay
+    Timer(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          _gameLoaded = true;
+        });
+      }
+    });
+
     Timer(const Duration(seconds: 10), () {
-      setState(() {
-        _showVoteButton = true;
-      });
+      if (mounted) {
+        setState(() {
+          _showVoteButton = true;
+        });
+      }
     });
   }
 
-  Widget _buildGameImage() {
-    final imageUrl = _isOdd 
-        ? (widget.game.oddImage ?? 'https://i.pravatar.cc/300?img=2')
-        : (widget.game.sameImage ?? 'https://i.pravatar.cc/300?img=1');
-    
-    // Check if it's a local file path or network URL
-    if (imageUrl.startsWith('http')) {
-      return Image.network(
-        imageUrl,
-        fit: BoxFit.cover,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Container(
-            width: double.infinity,
-            height: 250,
+  Widget _buildGameContent() {
+    // Show the name that the player should see
+    final displayName = _isOdd
+        ? (widget.game.oddName ?? 'Person B')
+        : (widget.game.sameName ?? 'Person A');
+
+    return Container(
+      width: double.infinity,
+      height: 250,
+      decoration: BoxDecoration(
+        color: AppTheme.cardColor,
+        border: Border.all(
+          color: _isOdd ? AppTheme.destructiveColor : AppTheme.successColor,
+          width: 3,
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.person,
+            size: 80,
+            color: _isOdd ? AppTheme.destructiveColor : AppTheme.successColor,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            displayName,
+            style: AppTheme.titleTextStyle.copyWith(
+              color: _isOdd ? AppTheme.destructiveColor : AppTheme.successColor,
+              fontSize: 24,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: AppTheme.backgroundColor,
-              borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+              color: (_isOdd ? AppTheme.destructiveColor : AppTheme.successColor).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
             ),
-            child: const Center(
-              child: CupertinoActivityIndicator(),
-            ),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            width: double.infinity,
-            height: 250,
-            decoration: BoxDecoration(
-              color: AppTheme.backgroundColor,
-              borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-            ),
-            child: const Center(
-              child: Icon(
-                Icons.broken_image,
-                size: 50,
-                color: AppTheme.textSecondary,
+            child: Text(
+              _isOdd ? 'Du er den som skiller seg ut' : 'Du er i gruppa',
+              style: TextStyle(
+                color: _isOdd ? AppTheme.destructiveColor : AppTheme.successColor,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
               ),
             ),
-          );
-        },
-      );
-    } else if (imageUrl.startsWith('/')) {
-      // Local file path
-      return Image.file(
-        File(imageUrl),
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            width: double.infinity,
-            height: 250,
-            decoration: BoxDecoration(
-              color: AppTheme.backgroundColor,
-              borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-            ),
-            child: const Center(
-              child: Icon(
-                Icons.broken_image,
-                size: 50,
-                color: AppTheme.textSecondary,
-              ),
-            ),
-          );
-        },
-      );
-    } else {
-      // Asset image
-      return Image.asset(
-        imageUrl,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            width: double.infinity,
-            height: 250,
-            decoration: BoxDecoration(
-              color: AppTheme.backgroundColor,
-              borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-            ),
-            child: const Center(
-              child: Icon(
-                Icons.broken_image,
-                size: 50,
-                color: AppTheme.textSecondary,
-              ),
-            ),
-          );
-        },
-      );
-    }
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -874,7 +1499,7 @@ class _GamePageState extends State<GamePage> {
                   height: 80,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: isCurrentPlayerWinner 
+                      colors: isCurrentPlayerWinner
                           ? [AppTheme.successColor, AppTheme.primaryColor]
                           : [AppTheme.destructiveColor, AppTheme.warningColor],
                     ),
@@ -933,8 +1558,8 @@ class _GamePageState extends State<GamePage> {
                     style: AppTheme.headlineTextStyle,
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Venter på at andre stemmer...',
+                  Text(
+                    'Venter på: ${widget.game.players.where((player) => !widget.game.votes.containsKey(player)).join(', ')}',
                     style: AppTheme.captionTextStyle,
                     textAlign: TextAlign.center,
                   ),
@@ -1012,8 +1637,8 @@ class _GamePageState extends State<GamePage> {
                     style: AppTheme.headlineTextStyle,
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Venter på at andre blir klare...',
+                  Text(
+                    'Venter på: ${widget.game.players.where((player) => !widget.game.readyPlayers.contains(player)).join(', ')}',
                     style: AppTheme.captionTextStyle,
                     textAlign: TextAlign.center,
                   ),
@@ -1031,12 +1656,12 @@ class _GamePageState extends State<GamePage> {
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    'Studer bildet',
+                    'Studer informasjonen',
                     style: AppTheme.headlineTextStyle,
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Se på bildet og forbered deg på å stemme',
+                    'Se på informasjonen og forbered deg på å stemme',
                     style: AppTheme.captionTextStyle,
                     textAlign: TextAlign.center,
                   ),
@@ -1076,12 +1701,12 @@ class _GamePageState extends State<GamePage> {
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    'Studerer bildet...',
+                    'Studerer informasjonen...',
                     style: AppTheme.headlineTextStyle,
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Se nøye på bildet. Stemmeknappen kommer snart.',
+                    'Se nøye på informasjonen. Stemmeknappen kommer snart.',
                     style: AppTheme.captionTextStyle,
                     textAlign: TextAlign.center,
                   ),
@@ -1110,63 +1735,7 @@ class _GamePageState extends State<GamePage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   IOSCard(
-                    child: Column(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                          child: Container(
-                            width: double.infinity,
-                            height: 250,
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: _isOdd ? AppTheme.destructiveColor : AppTheme.successColor,
-                                width: 3,
-                              ),
-                              borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                            ),
-                            child: _buildGameImage(),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        if (widget.game.sameName != null && widget.game.oddName != null) ...[
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: AppTheme.cardColor,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: (_isOdd ? AppTheme.destructiveColor : AppTheme.successColor).withOpacity(0.3),
-                                width: 1,
-                              ),
-                            ),
-                            child: Text(
-                              _isOdd ? widget.game.oddName! : widget.game.sameName!,
-                              style: AppTheme.headlineTextStyle.copyWith(
-                                color: _isOdd ? AppTheme.destructiveColor : AppTheme.successColor,
-                                fontSize: 18,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: (_isOdd ? AppTheme.destructiveColor : AppTheme.successColor).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            _isOdd ? 'Du er den som skiller seg ut' : 'Du er i gruppa',
-                            style: TextStyle(
-                              color: _isOdd ? AppTheme.destructiveColor : AppTheme.successColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    child: _buildGameContent(),
                   ),
                   const SizedBox(height: 20),
                   content,
@@ -1182,21 +1751,21 @@ class _GamePageState extends State<GamePage> {
 
 class ImageSettingsPage extends StatefulWidget {
   final Game game;
-  
+
   const ImageSettingsPage({super.key, required this.game});
-  
+
   @override
   State<ImageSettingsPage> createState() => _ImageSettingsPageState();
 }
 
 class _ImageSettingsPageState extends State<ImageSettingsPage> {
   final ImagePicker _picker = ImagePicker();
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bildeinnstillinger'),
+        title: const Text('Spillinnstillinger'),
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => Navigator.of(context).pop(),
@@ -1217,7 +1786,7 @@ class _ImageSettingsPageState extends State<ImageSettingsPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Bildekategori',
+                      'Spillkategori',
                       style: AppTheme.headlineTextStyle,
                     ),
                     const SizedBox(height: 16),
@@ -1269,23 +1838,18 @@ class _ImageSettingsPageState extends State<ImageSettingsPage> {
                                       Expanded(
                                         child: Column(
                                           children: [
-                                            ClipRRect(
-                                              borderRadius: BorderRadius.circular(6),
-                                              child: Container(
-                                                height: 45,
-                                                decoration: BoxDecoration(
-                                                  border: Border.all(color: AppTheme.successColor, width: 2),
-                                                  borderRadius: BorderRadius.circular(6),
-                                                ),
-                                                child: Image.network(
-                                                  pair.sameImage,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (context, error, stackTrace) {
-                                                    return Container(
-                                                      color: AppTheme.backgroundColor,
-                                                      child: const Icon(Icons.person, color: AppTheme.textSecondary, size: 16),
-                                                    );
-                                                  },
+                                            Container(
+                                              height: 45,
+                                              decoration: BoxDecoration(
+                                                color: AppTheme.successColor.withOpacity(0.1),
+                                                border: Border.all(color: AppTheme.successColor, width: 2),
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                              child: Center(
+                                                child: Icon(
+                                                  Icons.person,
+                                                  color: AppTheme.successColor,
+                                                  size: 20,
                                                 ),
                                               ),
                                             ),
@@ -1308,23 +1872,18 @@ class _ImageSettingsPageState extends State<ImageSettingsPage> {
                                       Expanded(
                                         child: Column(
                                           children: [
-                                            ClipRRect(
-                                              borderRadius: BorderRadius.circular(6),
-                                              child: Container(
-                                                height: 45,
-                                                decoration: BoxDecoration(
-                                                  border: Border.all(color: AppTheme.destructiveColor, width: 2),
-                                                  borderRadius: BorderRadius.circular(6),
-                                                ),
-                                                child: Image.network(
-                                                  pair.oddImage,
-                                                  fit: BoxFit.cover,
-                                                  errorBuilder: (context, error, stackTrace) {
-                                                    return Container(
-                                                      color: AppTheme.backgroundColor,
-                                                      child: const Icon(Icons.person, color: AppTheme.textSecondary, size: 16),
-                                                    );
-                                                  },
+                                            Container(
+                                              height: 45,
+                                              decoration: BoxDecoration(
+                                                color: AppTheme.destructiveColor.withOpacity(0.1),
+                                                border: Border.all(color: AppTheme.destructiveColor, width: 2),
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                              child: Center(
+                                                child: Icon(
+                                                  Icons.person,
+                                                  color: AppTheme.destructiveColor,
+                                                  size: 20,
                                                 ),
                                               ),
                                             ),
@@ -1370,7 +1929,7 @@ class _ImageSettingsPageState extends State<ImageSettingsPage> {
                             ),
                           ),
                           const SizedBox(width: 6),
-                          const Text('Gruppebilde', style: AppTheme.captionTextStyle),
+                          const Text('Gruppeperson', style: AppTheme.captionTextStyle),
                           const SizedBox(width: 16),
                           Container(
                             width: 12,
@@ -1384,119 +1943,6 @@ class _ImageSettingsPageState extends State<ImageSettingsPage> {
                           const Text('«Odd one out»', style: AppTheme.captionTextStyle),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
-              if (widget.game.imageCategory == ImageCategory.custom) ...[
-                IOSCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Egne bilder',
-                            style: AppTheme.headlineTextStyle,
-                          ),
-                          CupertinoButton(
-                            padding: EdgeInsets.zero,
-                            onPressed: _addCustomImage,
-                            child: const Icon(
-                              CupertinoIcons.add_circled,
-                              color: AppTheme.primaryColor,
-                              size: 28,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      if (ImageManager.getCustomImages().isEmpty)
-                        Container(
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            color: AppTheme.backgroundColor,
-                            borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                            border: Border.all(
-                              color: AppTheme.textSecondary.withOpacity(0.3),
-                              style: BorderStyle.solid,
-                            ),
-                          ),
-                          child: const Column(
-                            children: [
-                              Icon(
-                                Icons.photo_library_outlined,
-                                size: 48,
-                                color: AppTheme.textSecondary,
-                              ),
-                              SizedBox(height: 12),
-                              Text(
-                                'Ingen bilder lagt til ennå',
-                                style: AppTheme.captionTextStyle,
-                                textAlign: TextAlign.center,
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                'Trykk på + for å legge til bilder',
-                                style: AppTheme.captionTextStyle,
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        )
-                      else
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            crossAxisSpacing: 8,
-                            mainAxisSpacing: 8,
-                          ),
-                          itemCount: ImageManager.getCustomImages().length,
-                          itemBuilder: (context, index) {
-                            final imagePath = ImageManager.getCustomImages()[index];
-                            return Stack(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.file(
-                                    File(imagePath),
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 4,
-                                  right: 4,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        ImageManager.removeCustomImage(imagePath);
-                                      });
-                                    },
-                                    child: Container(
-                                      width: 24,
-                                      height: 24,
-                                      decoration: const BoxDecoration(
-                                        color: AppTheme.destructiveColor,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.close,
-                                        color: Colors.white,
-                                        size: 16,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
                     ],
                   ),
                 ),
@@ -1518,8 +1964,8 @@ class _ImageSettingsPageState extends State<ImageSettingsPage> {
                     const SizedBox(height: 8),
                     Text(
                       widget.game.imageCategory == ImageCategory.similarPeople
-                          ? 'Spillet velger tilfeldig et par med like personer. Alle får samme bilde, unntatt én som får det andre bildet fra paret.'
-                          : 'Spillet velger tilfeldig bilder fra den valgte kategorien. Én spiller får et annet bilde enn resten.',
+                          ? 'Spillet velger tilfeldig et par med lignende kjendiser. Alle får samme navn, unntatt én som får det andre navnet fra paret.'
+                          : 'Spillet velger tilfeldig navn fra den valgte kategorien. Én spiller får et annet navn enn resten.',
                       style: AppTheme.bodyTextStyle,
                       textAlign: TextAlign.center,
                     ),
@@ -1532,7 +1978,7 @@ class _ImageSettingsPageState extends State<ImageSettingsPage> {
       ),
     );
   }
-  
+
   Future<void> _addCustomImage() async {
     try {
       final XFile? image = await _picker.pickImage(
@@ -1541,7 +1987,7 @@ class _ImageSettingsPageState extends State<ImageSettingsPage> {
         maxHeight: 800,
         imageQuality: 85,
       );
-      
+
       if (image != null) {
         await ImageManager.addCustomImage(image.path);
         setState(() {});
@@ -1561,12 +2007,42 @@ class _ImageSettingsPageState extends State<ImageSettingsPage> {
 Game? currentGame;
 List<GameInfo> availableGames = [];
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize systems
+  await ScoreManager.loadScores();
+
+  // Load saved preferences
+  final prefs = await SharedPreferences.getInstance();
+  final isDarkMode = prefs.getBool('dark_mode') ?? false;
+  final soundEnabled = prefs.getBool('sound_enabled') ?? true;
+
+  AppTheme.setDarkMode(isDarkMode);
+  SoundManager.setSoundEnabled(soundEnabled);
+
   runApp(const MainApp());
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
   const MainApp({super.key});
+
+  @override
+  State<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends State<MainApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Set preferred orientations (portrait and landscape)
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1575,16 +2051,36 @@ class MainApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: AppTheme.backgroundColor,
-        appBarTheme: const AppBarTheme(
+        appBarTheme: AppBarTheme(
           backgroundColor: AppTheme.backgroundColor,
           foregroundColor: AppTheme.textPrimary,
           elevation: 0,
           centerTitle: true,
           titleTextStyle: AppTheme.headlineTextStyle,
         ),
+        brightness: AppTheme.isDarkMode ? Brightness.dark : Brightness.light,
       ),
+      darkTheme: ThemeData(
+        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: AppTheme.backgroundColor,
+        appBarTheme: AppBarTheme(
+          backgroundColor: AppTheme.backgroundColor,
+          foregroundColor: AppTheme.textPrimary,
+          elevation: 0,
+          centerTitle: true,
+          titleTextStyle: AppTheme.headlineTextStyle,
+        ),
+        brightness: Brightness.dark,
+      ),
+      themeMode: AppTheme.isDarkMode ? ThemeMode.dark : ThemeMode.light,
       home: const HomePage(),
     );
+  }
+
+  @override
+  void dispose() {
+    SoundManager.dispose();
+    super.dispose();
   }
 }
 
@@ -1604,15 +2100,27 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
-  void _createGame() {
+  void _createGame() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
       _showMessage('Skriv inn navn for å lage spillet');
       return;
     }
-    final code = _generateCode();
-    currentGame = Game(code: code, hostName: name, isHost: true);
-    showDialog(
+    if (name.length > 20) {
+      _showMessage('Navnet er for langt (maks 20 tegn)');
+      return;
+    }
+
+    try {
+      final code = _generateCode();
+      currentGame = Game(code: code, hostName: name, isHost: true);
+
+      // Wait a bit to ensure network setup
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      if (!mounted) return;
+
+      showDialog(
       context: context,
       builder: (_) => CupertinoAlertDialog(
         title: const Text(
@@ -1668,6 +2176,10 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
+    } catch (e) {
+      _showMessage('Kunne ikke opprette spill. Sjekk WiFi-forbindelsen.');
+      print('Game creation error: $e');
+    }
   }
 
   Future<void> _joinGame() async {
@@ -1676,15 +2188,19 @@ class _HomePageState extends State<HomePage> {
       _showMessage('Skriv inn navn for å bli med i spillet');
       return;
     }
+    if (name.length > 20) {
+      _showMessage('Navnet er for langt (maks 20 tegn)');
+      return;
+    }
 
     _showMessage('Søker etter spill på WiFi...');
-    
+
     final networkManager = NetworkManager(
       onMessageReceived: (message) {},
       onPlayerJoined: (player) {},
       onPlayerLeft: (player) {},
     );
-    
+
     await networkManager.initialize();
     availableGames = await networkManager.discoverGames();
     networkManager.dispose();
@@ -1754,22 +2270,22 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _joinNetworkGame(GameInfo gameInfo, String playerName) async {
     currentGame = Game(code: gameInfo.code, hostName: 'Host', isHost: false);
-    
+
     final networkManager = NetworkManager(
       onMessageReceived: currentGame!._handleNetworkMessage,
       onPlayerJoined: (player) {},
       onPlayerLeft: (player) {},
     );
-    
+
     currentGame!.networkManager = networkManager;
     await networkManager.initialize();
     await networkManager.joinGame(gameInfo.hostIP);
-    
+
     networkManager.sendMessage({
       'type': 'player_joined',
       'player_name': playerName,
     });
-    
+
     if (!mounted) return;
     Navigator.of(context).push(
       CupertinoPageRoute(
@@ -1873,6 +2389,30 @@ class _HomePageState extends State<HomePage> {
                         onPressed: _joinGame,
                         isLarge: true,
                       ),
+                      const SizedBox(height: 12),
+                      IOSButton(
+                        text: 'Innstillinger',
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            CupertinoPageRoute(
+                              builder: (_) => const SettingsPage(),
+                            ),
+                          );
+                        },
+                        isLarge: true,
+                      ),
+                      const SizedBox(height: 12),
+                      IOSButton(
+                        text: 'Statistikk',
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            CupertinoPageRoute(
+                              builder: (_) => const StatsPage(),
+                            ),
+                          );
+                        },
+                        isLarge: true,
+                      ),
                     ],
                   ),
                 ),
@@ -1935,8 +2475,37 @@ class LobbyPage extends StatefulWidget {
   State<LobbyPage> createState() => _LobbyPageState();
 }
 
-class _LobbyPageState extends State<LobbyPage> {
+class _LobbyPageState extends State<LobbyPage> with WidgetsBindingObserver {
   bool _navigated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Ensure network connection is active
+    _ensureNetworkConnection();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // App came back to foreground, ensure connection
+      _ensureNetworkConnection();
+    }
+  }
+
+  void _ensureNetworkConnection() {
+    if (widget.game.isHost && widget.game.networkManager == null) {
+      // Host lost connection, reinitialize
+      widget.game._initializeNetworking();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2025,6 +2594,14 @@ class _LobbyPageState extends State<LobbyPage> {
                                 ],
                               ),
                             ),
+                            Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: widget.game.networkManager != null ? AppTheme.successColor : AppTheme.warningColor,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -2049,21 +2626,21 @@ class _LobbyPageState extends State<LobbyPage> {
                                 final player = widget.game.players[index];
                                 final isCurrentPlayer = player == widget.playerName;
                                 final isHostPlayer = player == widget.game.hostName;
-                                
+
                                 return Container(
                                   padding: const EdgeInsets.symmetric(vertical: 12),
                                   child: Row(
                                     children: [
                                       CircleAvatar(
-                                        backgroundColor: isCurrentPlayer 
-                                            ? AppTheme.primaryColor 
+                                        backgroundColor: isCurrentPlayer
+                                            ? AppTheme.primaryColor
                                             : AppTheme.textSecondary.withOpacity(0.2),
                                         radius: 20,
                                         child: Text(
                                           player[0].toUpperCase(),
                                           style: TextStyle(
-                                            color: isCurrentPlayer 
-                                                ? Colors.white 
+                                            color: isCurrentPlayer
+                                                ? Colors.white
                                                 : AppTheme.textSecondary,
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -2079,8 +2656,8 @@ class _LobbyPageState extends State<LobbyPage> {
                                                 Text(
                                                   player,
                                                   style: AppTheme.bodyTextStyle.copyWith(
-                                                    fontWeight: isCurrentPlayer 
-                                                        ? FontWeight.bold 
+                                                    fontWeight: isCurrentPlayer
+                                                        ? FontWeight.bold
                                                         : FontWeight.normal,
                                                   ),
                                                 ),
@@ -2140,13 +2717,25 @@ class _LobbyPageState extends State<LobbyPage> {
                   const SizedBox(height: 20),
                   if (isHost && widget.game.players.length >= 2) ...[
                     IOSButton(
-                      text: 'Bildeinnstillinger',
+                      text: 'Spillinnstillinger',
                       onPressed: () {
                         Navigator.of(context).push(
                           CupertinoPageRoute(
                             builder: (_) => ImageSettingsPage(
                               game: widget.game,
                             ),
+                          ),
+                        );
+                      },
+                      isLarge: true,
+                    ),
+                    const SizedBox(height: 12),
+                    IOSButton(
+                      text: 'Spillregler',
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          CupertinoPageRoute(
+                            builder: (_) => RulesPage(),
                           ),
                         );
                       },
@@ -2181,7 +2770,19 @@ class _LobbyPageState extends State<LobbyPage> {
                         ],
                       ),
                     ),
-                  if (!isHost)
+                  if (!isHost) ...[
+                    IOSButton(
+                      text: 'Spillregler',
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          CupertinoPageRoute(
+                            builder: (_) => RulesPage(),
+                          ),
+                        );
+                      },
+                      isLarge: true,
+                    ),
+                    const SizedBox(height: 12),
                     IOSCard(
                       child: Row(
                         children: [
@@ -2199,6 +2800,7 @@ class _LobbyPageState extends State<LobbyPage> {
                         ],
                       ),
                     ),
+                  ],
                 ],
               ),
             );
@@ -2209,3 +2811,334 @@ class _LobbyPageState extends State<LobbyPage> {
   }
 }
 
+class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Innstillinger'),
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () => Navigator.of(context).pop(),
+          child: Icon(
+            CupertinoIcons.back,
+            color: AppTheme.primaryColor,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppTheme.spacing),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              IOSCard(
+                child: Column(
+                  children: [
+                    _buildSettingToggle(
+                      'Mørk modus',
+                      'Bruk mørkt tema',
+                      AppTheme.isDarkMode,
+                      (value) async {
+                        setState(() {
+                          AppTheme.setDarkMode(value);
+                        });
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool('dark_mode', value);
+                        // Force rebuild of main app
+                        if (mounted) {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (_) => const MainApp()),
+                          );
+                        }
+                      },
+                    ),
+                    const Divider(),
+                    _buildSettingToggle(
+                      'Lydeffekter',
+                      'Spill av lyder for handlinger',
+                      SoundManager.soundEnabled,
+                      (value) async {
+                        setState(() {
+                          SoundManager.setSoundEnabled(value);
+                        });
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool('sound_enabled', value);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              IOSCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Om appen',
+                      style: AppTheme.headlineTextStyle,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Out of Sync v2.0\nEt sosialt spill der målet er å finne ut hvem som skiller seg ut.',
+                      style: AppTheme.bodyTextStyle,
+                    ),
+                    const SizedBox(height: 16),
+                    IOSButton(
+                      text: 'Nullstill statistikk',
+                      onPressed: () async {
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => CupertinoAlertDialog(
+                            title: const Text('Nullstill statistikk'),
+                            content: const Text('Er du sikker på at du vil slette all statistikk?'),
+                            actions: [
+                              CupertinoDialogAction(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Avbryt'),
+                              ),
+                              CupertinoDialogAction(
+                                onPressed: () => Navigator.pop(context, true),
+                                isDestructiveAction: true,
+                                child: const Text('Nullstill'),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (confirmed == true) {
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.remove('player_scores');
+                          ScoreManager.scores.clear();
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Statistikk nullstilt')),
+                            );
+                          }
+                        }
+                      },
+                      isDestructive: true,
+                      isLarge: true,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingToggle(
+    String title,
+    String subtitle,
+    bool value,
+    Function(bool) onChanged,
+  ) {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: AppTheme.bodyTextStyle),
+              Text(subtitle, style: AppTheme.captionTextStyle),
+            ],
+          ),
+        ),
+        CupertinoSwitch(
+          value: value,
+          onChanged: onChanged,
+          activeColor: AppTheme.primaryColor,
+        ),
+      ],
+    );
+  }
+}
+
+class StatsPage extends StatelessWidget {
+  const StatsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Statistikk'),
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () => Navigator.of(context).pop(),
+          child: Icon(
+            CupertinoIcons.back,
+            color: AppTheme.primaryColor,
+          ),
+        ),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppTheme.spacing),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (ScoreManager.scores.isEmpty)
+                IOSCard(
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.bar_chart,
+                        size: 64,
+                        color: AppTheme.textSecondary,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Ingen statistikk ennå',
+                        style: AppTheme.headlineTextStyle,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Spill ditt første spill for å se statistikk her',
+                        style: AppTheme.captionTextStyle,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                )
+              else
+                ...ScoreManager.scores.entries.map((entry) {
+                  final score = entry.value;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: IOSCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                backgroundColor: AppTheme.primaryColor,
+                                radius: 24,
+                                child: Text(
+                                  score.playerName[0].toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      score.playerName,
+                                      style: AppTheme.headlineTextStyle,
+                                    ),
+                                    Text(
+                                      '${score.gamesPlayed} spill spilt',
+                                      style: AppTheme.captionTextStyle,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.successColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  '${(score.winRate * 100).toInt()}%',
+                                  style: TextStyle(
+                                    color: AppTheme.successColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              _buildStatItem('Seire', '${score.wins}', AppTheme.successColor),
+                              _buildStatItem('Tap', '${score.losses}', AppTheme.destructiveColor),
+                              _buildStatItem('Utmerkelser', '${score.achievements.length}', AppTheme.warningColor),
+                            ],
+                          ),
+                          if (score.achievements.isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            Text(
+                              'Utmerkelser:',
+                              style: AppTheme.bodyTextStyle.copyWith(fontWeight: FontWeight.w600),
+                            ),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: score.achievements.map((achievement) {
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.warningColor.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: AppTheme.warningColor),
+                                  ),
+                                  child: Text(
+                                    achievement,
+                                    style: TextStyle(
+                                      color: AppTheme.warningColor,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatItem(String label, String value, Color color) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          Text(
+            label,
+            style: AppTheme.captionTextStyle,
+          ),
+        ],
+      ),
+    );
+  }
+}
