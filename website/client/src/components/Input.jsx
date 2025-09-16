@@ -12,7 +12,7 @@ const Input = ({
   return (
     <div className={`space-y-2 ${className}`}>
       {label && (
-        <label className="block text-sm font-medium text-textPrimary">
+        <label className="block text-sm font-medium text-textPrimary dark:text-textPrimary-dark">
           {label}
         </label>
       )}

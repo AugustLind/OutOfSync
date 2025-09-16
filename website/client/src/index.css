@@ -4,29 +4,29 @@
 
 @layer base {
   body {
-    @apply bg-background font-sans text-textPrimary;
+    @apply bg-background dark:bg-background-dark font-sans text-textPrimary dark:text-textPrimary-dark transition-colors duration-300;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-primary text-white px-6 py-3 rounded-ios font-semibold shadow-ios hover:bg-blue-600 transition-colors;
+    @apply bg-primary text-white px-6 py-3 rounded-ios font-semibold shadow-ios dark:shadow-ios-dark hover:bg-blue-600 transition-colors;
   }
-  
+
   .btn-secondary {
-    @apply bg-card text-primary border border-primary px-6 py-3 rounded-ios font-semibold shadow-ios hover:bg-gray-50 transition-colors;
+    @apply bg-card dark:bg-card-dark text-primary border border-primary px-6 py-3 rounded-ios font-semibold shadow-ios dark:shadow-ios-dark hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors;
   }
-  
+
   .btn-destructive {
-    @apply bg-destructive text-white px-6 py-3 rounded-ios font-semibold shadow-ios hover:bg-red-600 transition-colors;
+    @apply bg-destructive text-white px-6 py-3 rounded-ios font-semibold shadow-ios dark:shadow-ios-dark hover:bg-red-600 transition-colors;
   }
-  
+
   .card {
-    @apply bg-card rounded-ios p-6 shadow-ios;
+    @apply bg-card dark:bg-card-dark rounded-ios p-6 shadow-ios dark:shadow-ios-dark border border-border dark:border-border-dark;
   }
-  
+
   .input-field {
-    @apply bg-card border border-gray-200 rounded-ios px-4 py-3 text-textPrimary placeholder-textSecondary focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all;
+    @apply bg-card dark:bg-card-dark border border-border dark:border-border-dark rounded-ios px-4 py-3 text-textPrimary dark:text-textPrimary-dark placeholder-textSecondary focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all;
   }
 }
 

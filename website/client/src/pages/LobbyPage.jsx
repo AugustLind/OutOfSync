@@ -34,10 +34,10 @@ const LobbyPage = () => {
 
   if (!game || !playerName) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background dark:bg-background-dark">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-textSecondary">Loading...</p>
+          <p className="text-textSecondary dark:text-textSecondary">Loading...</p>
         </div>
       </div>
     )
@@ -56,7 +56,7 @@ const LobbyPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-3 sm:p-4 relative overflow-hidden safe-area">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-indigo-900 dark:to-purple-900 p-3 sm:p-4 relative overflow-hidden safe-area">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
@@ -67,7 +67,7 @@ const LobbyPage = () => {
         <div className="text-center relative">
           <button
             onClick={handleLeaveGame}
-            className="absolute top-0 left-0 p-3 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30 text-gray-600 hover:text-gray-800 hover:bg-white/30 transition-all duration-200 min-w-[44px] min-h-[44px]"
+            className="absolute top-0 left-0 p-3 bg-white/20 dark:bg-black/20 backdrop-blur-sm rounded-2xl border border-white/30 dark:border-gray-600/30 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-white/30 dark:hover:bg-black/30 transition-all duration-200 min-w-[44px] min-h-[44px]"
           >
             <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -80,20 +80,20 @@ const LobbyPage = () => {
             </h1>
             
             {/* Enhanced Game Code Display */}
-            <div className="inline-flex flex-col sm:flex-row items-center sm:space-x-4 space-y-3 sm:space-y-0 backdrop-blur-md bg-white/20 border border-white/30 rounded-2xl px-4 sm:px-8 py-4 shadow-xl">
+            <div className="inline-flex flex-col sm:flex-row items-center sm:space-x-4 space-y-3 sm:space-y-0 backdrop-blur-md bg-white/20 dark:bg-black/20 border border-white/30 dark:border-gray-600/30 rounded-2xl px-4 sm:px-8 py-4 shadow-xl">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-gray-700">Game Code:</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Game Code:</span>
               </div>
-              <div className="text-2xl sm:text-3xl font-black tracking-widest text-indigo-600 font-mono bg-white/50 px-4 sm:px-6 py-2 rounded-xl">
+              <div className="text-2xl sm:text-3xl font-black tracking-widest text-indigo-600 dark:text-indigo-400 font-mono bg-white/50 dark:bg-gray-800/50 px-4 sm:px-6 py-2 rounded-xl">
                 {game.code}
               </div>
               <button 
                 onClick={() => navigator.clipboard.writeText(game.code)}
-                className="p-3 bg-indigo-500/20 hover:bg-indigo-500/30 rounded-xl transition-colors duration-200 min-w-[44px] min-h-[44px]"
+                className="p-3 bg-indigo-500/20 dark:bg-indigo-400/20 hover:bg-indigo-500/30 dark:hover:bg-indigo-400/30 rounded-xl transition-colors duration-200 min-w-[44px] min-h-[44px]"
                 title="Copy game code"
               >
-                <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
               </button>
@@ -102,7 +102,7 @@ const LobbyPage = () => {
         </div>
 
         {/* Players Section */}
-        <div className="backdrop-blur-md bg-white/20 border border-white/30 rounded-3xl p-4 sm:p-8 shadow-2xl">
+        <div className="backdrop-blur-md bg-white/20 dark:bg-black/20 border border-white/30 dark:border-gray-600/30 rounded-3xl p-4 sm:p-8 shadow-2xl">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
             <div className="flex items-center space-x-3 sm:space-x-4">
               <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg">
@@ -111,8 +111,8 @@ const LobbyPage = () => {
                 </svg>
               </div>
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Players in Lobby</h2>
-                <p className="text-sm sm:text-base text-gray-600">{game.players.length} of 8 players joined</p>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200">Players in Lobby</h2>
+                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">{game.players.length} of 8 players joined</p>
               </div>
             </div>
             
@@ -123,12 +123,12 @@ const LobbyPage = () => {
                   <div
                     key={i}
                     className={`w-2 h-2 rounded-full ${
-                      i < game.players.length ? 'bg-green-500' : 'bg-gray-300'
+                      i < game.players.length ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'
                     }`}
                   />
                 ))}
               </div>
-              <span className="text-sm text-gray-500 ml-2">max 8</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">max 8</span>
             </div>
           </div>
 

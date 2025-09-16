@@ -12,10 +12,10 @@ const Button = ({
   const baseClasses = 'font-semibold rounded-ios transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-target no-select'
   
   const variantClasses = {
-    primary: 'bg-primary text-white shadow-ios hover:bg-blue-600 active:bg-blue-700',
-    secondary: 'bg-card text-primary border border-primary shadow-ios hover:bg-gray-50 active:bg-gray-100',
-    destructive: 'bg-destructive text-white shadow-ios hover:bg-red-600 active:bg-red-700',
-    success: 'bg-success text-white shadow-ios hover:bg-green-600 active:bg-green-700'
+    primary: 'bg-primary text-white shadow-ios dark:shadow-ios-dark hover:bg-blue-600 active:bg-blue-700',
+    secondary: 'bg-card dark:bg-card-dark text-primary border border-primary shadow-ios dark:shadow-ios-dark hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600',
+    destructive: 'bg-destructive text-white shadow-ios dark:shadow-ios-dark hover:bg-red-600 active:bg-red-700',
+    success: 'bg-success text-white shadow-ios dark:shadow-ios-dark hover:bg-green-600 active:bg-green-700'
   }
   
   const sizeClasses = {
