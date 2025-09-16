@@ -72,10 +72,10 @@ const GamePage = () => {
 
   if (!game || !playerName) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background dark:bg-background-dark">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-textSecondary">Loading...</p>
+          <p className="text-textSecondary dark:text-textSecondary">Loading...</p>
         </div>
       </div>
     )
@@ -136,12 +136,12 @@ const GamePage = () => {
     
     // Determine result color: green if correct guess, red if wrong
     const resultColor = wasOddPlayerCorrectlyVoted ? 'success' : 'destructive'
-    const bgColor = isPlayerOnLosingSide ? 'bg-red-500' : 'bg-green-50'
+    const bgColor = isPlayerOnLosingSide ? 'bg-red-500' : 'bg-green-50 dark:bg-green-900'
     
     return (
-      <div className={`min-h-screen p-3 sm:p-4 flex items-center justify-center ${bgColor} safe-area`}>
+      <div className={`min-h-screen p-3 sm:p-4 flex items-center justify-center ${bgColor} transition-colors safe-area`}>
         <div className="max-w-sm sm:max-w-md w-full space-y-4 sm:space-y-6">
-          <Card className={`text-center ${isPlayerOnLosingSide ? 'bg-white/90 backdrop-blur-sm' : ''}`}>
+          <Card className={`text-center ${isPlayerOnLosingSide ? 'bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm' : ''}`}>
             <div className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center bg-${resultColor}`}>
               <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
                 {wasOddPlayerCorrectlyVoted ? (
@@ -152,35 +152,35 @@ const GamePage = () => {
               </svg>
             </div>
             
-            <h2 className={`text-2xl font-bold mb-4 ${wasOddPlayerCorrectlyVoted ? 'text-green-700' : 'text-red-700'}`}>
+            <h2 className={`text-2xl font-bold mb-4 ${wasOddPlayerCorrectlyVoted ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
               {wasOddPlayerCorrectlyVoted ? 'Correct Guess!' : 'Wrong Guess!'}
             </h2>
             
             <div className="space-y-3 mb-6">
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-600 font-medium">Most Voted Player:</p>
-                <p className="text-lg font-bold text-blue-800">{game.winner}</p>
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">Most Voted Player:</p>
+                <p className="text-lg font-bold text-blue-800 dark:text-blue-300">{game.winner}</p>
               </div>
               
-              <div className="p-3 bg-yellow-50 rounded-lg">
-                <p className="text-sm text-yellow-600 font-medium">Actual Odd One Out:</p>
-                <p className="text-lg font-bold text-yellow-800">
+              <div className="p-3 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg">
+                <p className="text-sm text-yellow-600 dark:text-yellow-400 font-medium">Actual Odd One Out:</p>
+                <p className="text-lg font-bold text-yellow-800 dark:text-yellow-300">
                   {actualOddPlayer ? actualOddPlayer.name : 'Unknown'}
                 </p>
-                <p className="text-sm text-yellow-600 mt-1">
+                <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-1">
                   Had image: {game.oddName}
                 </p>
               </div>
               
-              <div className="p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600 font-medium">Everyone Else Had:</p>
-                <p className="text-lg font-bold text-gray-800">{game.sameName}</p>
+              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Everyone Else Had:</p>
+                <p className="text-lg font-bold text-gray-800 dark:text-gray-200">{game.sameName}</p>
               </div>
             </div>
             
             {isWinner && (
-              <div className={`p-3 rounded-lg mb-4 ${isOddPlayer ? 'bg-purple-50' : 'bg-orange-50'}`}>
-                <p className={`text-sm font-medium ${isOddPlayer ? 'text-purple-600' : 'text-orange-600'}`}>
+              <div className={`p-3 rounded-lg mb-4 ${isOddPlayer ? 'bg-purple-50 dark:bg-purple-900/30' : 'bg-orange-50 dark:bg-orange-900/30'}`}>
+                <p className={`text-sm font-medium ${isOddPlayer ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400'}`}>
                   {isOddPlayer ? 'You were the odd one out and got caught!' : 'You got the most votes but weren\'t the odd one out!'}
                 </p>
               </div>
@@ -198,26 +198,26 @@ const GamePage = () => {
   if (game.votingStarted) {
     if (hasVoted) {
       return (
-        <div className="min-h-screen p-3 sm:p-4 flex items-center justify-center safe-area">
+        <div className="min-h-screen p-3 sm:p-4 flex items-center justify-center bg-background dark:bg-background-dark safe-area">
           <Card className="text-center max-w-sm sm:max-w-md">
             <div className="w-16 h-16 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
             </div>
-            <h2 className="text-lg sm:text-xl font-bold text-textPrimary mb-2">Vote Cast!</h2>
-            <p className="text-sm sm:text-base text-textSecondary">Waiting for other players to vote...</p>
+            <h2 className="text-lg sm:text-xl font-bold text-textPrimary dark:text-textPrimary-dark mb-2">Vote Cast!</h2>
+            <p className="text-sm sm:text-base text-textSecondary dark:text-textSecondary">Waiting for other players to vote...</p>
           </Card>
         </div>
       )
     }
 
     return (
-      <div className="min-h-screen p-3 sm:p-4 safe-area">
+      <div className="min-h-screen p-3 sm:p-4 bg-background dark:bg-background-dark safe-area">
         <div className="max-w-lg sm:max-w-2xl mx-auto space-y-4 sm:space-y-6">
           <button
             onClick={handleGoHome}
-            className="absolute top-3 left-3 sm:top-4 sm:left-4 p-2 text-textSecondary hover:text-textPrimary touch-target"
+            className="absolute top-3 left-3 sm:top-4 sm:left-4 p-2 text-textSecondary dark:text-textSecondary hover:text-textPrimary dark:hover:text-textPrimary-dark touch-target"
           >
             <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -231,15 +231,15 @@ const GamePage = () => {
                 <path fillRule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 002 0V3a2 2 0 012 0v1a1 1 0 002 0V3a2 2 0 012 2v6h-2V8a1 1 0 10-2 0v3H6V8a1 1 0 10-2 0v3H2V5z" clipRule="evenodd" />
               </svg>
             </div>
-            <h2 className="text-lg sm:text-xl font-bold text-textPrimary mb-2">Vote for a Player</h2>
-            <p className="text-sm sm:text-base text-textSecondary">Who do you think has the different image?</p>
+            <h2 className="text-lg sm:text-xl font-bold text-textPrimary dark:text-textPrimary-dark mb-2">Vote for a Player</h2>
+            <p className="text-sm sm:text-base text-textSecondary dark:text-textSecondary">Who do you think has the different image?</p>
             <div className="mt-3">
-              <div className="flex items-center justify-between text-sm text-textSecondary mb-2">
+              <div className="flex items-center justify-between text-sm text-textSecondary dark:text-textSecondary mb-2">
                 <span>{votesCount || 0} of {game.players.length} players have voted</span>
                 <span>{Math.round(((votesCount || 0) / game.players.length) * 100)}%</span>
               </div>
               {/* Progress bar */}
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div 
                   className="bg-primary h-2 rounded-full transition-all duration-300" 
                   style={{ width: `${((votesCount || 0) / game.players.length) * 100}%` }}
@@ -280,18 +280,18 @@ const GamePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-3 sm:p-4 relative overflow-hidden safe-area">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-purple-100 to-slate-100 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 p-3 sm:p-4 relative overflow-hidden safe-area transition-colors duration-300">
       {/* Cinematic background effects */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/5 dark:via-purple-900/5 to-transparent"></div>
       </div>
 
       <div className="max-w-2xl sm:max-w-4xl mx-auto space-y-6 sm:space-y-8 relative z-10">
         <button
           onClick={handleGoHome}
-          className="absolute top-0 left-0 p-3 bg-black/20 backdrop-blur-sm rounded-2xl border border-white/10 text-white/60 hover:text-white hover:bg-black/30 transition-all duration-200 min-w-[44px] min-h-[44px]"
+          className="absolute top-0 left-0 p-3 bg-black/20 dark:bg-black/20 backdrop-blur-sm rounded-2xl border border-white/10 dark:border-white/10 text-gray-600 dark:text-white/60 hover:text-gray-800 dark:hover:text-white hover:bg-black/30 dark:hover:bg-black/30 transition-all duration-200 min-w-[44px] min-h-[44px]"
         >
           <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -319,14 +319,14 @@ const GamePage = () => {
                     }`}>
                       {imageError ? (
                         // Fallback placeholder when image fails to load
-                        <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
-                          <div className="text-center text-white">
+                        <div className="w-full h-full bg-gradient-to-br from-slate-300 to-slate-500 dark:from-slate-700 dark:to-slate-900 flex items-center justify-center">
+                          <div className="text-center text-gray-800 dark:text-white">
                             <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
                               <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
                               </svg>
                             </div>
-                            <h3 className="text-lg font-bold mb-1">{playerCelebrity}</h3>
+                            <h3 className="text-lg font-bold mb-1 text-gray-800 dark:text-white">{playerCelebrity}</h3>
                             <p className="text-sm text-white/60">Celebrity Image</p>
                           </div>
                         </div>
