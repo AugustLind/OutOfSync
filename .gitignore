@@ -1,0 +1,14 @@
+# Local credentials and signing material, at any directory depth
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+key.properties
+*.p12
+*.mobileprovision
+
+# Local editor files
+.DS_Store
+.idea/
+.vscode/

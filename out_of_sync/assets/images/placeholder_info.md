@@ -1,20 +1,20 @@
-# Game Images
+# Image assets: current behavior
 
-Add your game images to this directory. The game supports:
+The app currently selects image pairs from the hardcoded list in
+[`ImageManager`](../../lib/src/image_manager.dart). It does not enumerate
+category folders or load `similar_people/image_pairs.json` at runtime.
 
-## Image Categories:
-- **Animals**: animals_1.jpg, animals_2.jpg, etc.
-- **Objects**: objects_1.jpg, objects_2.jpg, etc.
-- **People**: people_1.jpg, people_2.jpg, etc.
-- **Colors**: colors_1.jpg, colors_2.jpg, etc.
+- Similar People uses the hardcoded remote celebrity/lookalike pairs.
+- Animals, Objects, People, and Colors currently use shared remote placeholders.
+- Custom images are chosen through the platform picker and kept as local paths
+  for the session. Files are not transferred to other players or persisted.
 
-## Image Requirements:
-- Format: JPG, PNG
-- Size: Recommended 300x300 pixels or larger
-- Aspect ratio: Square (1:1) works best
+The JSON file is legacy example material, not a supported image catalog.
+Adding `animals_1.jpg` or another category-like filename does not register it.
+To add bundled assets, update both the selection code and `pubspec.yaml` with
+the actual files/subdirectories, then test on the intended platform.
 
-## Naming Convention:
-Use the format: `category_number.jpg`
-Example: `animals_1.jpg`, `animals_2.jpg`
-
-The game will randomly select from available images in the chosen category.
+Prefer reliably hosted or bundled images with known sources, permissions, and
+attribution. The current remote URLs and example JSON are not a verified media
+collection. Device-local paths are unsuitable for cross-device play without an
+explicit image-transfer mechanism.
